@@ -1,0 +1,424 @@
+<div class="page">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <h1>Registro de Hábitos</h1>
+      <p>Registra y monitores tus hábitos de salud para un mejor seguimiento</p>
+
+      <button class="btn btn-green" type="button" (click)="addRegistro()">
+        + Añadir Registro
+      </button>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-ill"></div>
+    </div>
+  </section>
+
+  <section class="content">
+    <!-- LEFT -->
+    <div class="left">
+      <h2 class="section-title">Hábitos esta semana</h2>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button
+          class="tab"
+          [class.active]="tab()==='SLEEP'"
+          (click)="setTab('SLEEP')"
+        >
+          <span class="t-ic">🌙</span>
+          <span class="t-txt">hrs<br />Sueño</span>
+        </button>
+
+        <button
+          class="tab"
+          [class.active]="tab()==='EXERCISE'"
+          (click)="setTab('EXERCISE')"
+        >
+          <span class="t-ic">🏃</span>
+          <span class="t-txt">hrs<br />Ejercicio</span>
+        </button>
+
+        <button
+          class="tab"
+          [class.active]="tab()==='NUTRITION'"
+          (click)="setTab('NUTRITION')"
+        >
+          <span class="t-ic">🍎</span>
+          <span class="t-txt">Alimentación</span>
+        </button>
+
+        <button
+          class="tab"
+          [class.active]="tab()==='STRESS'"
+          (click)="setTab('STRESS')"
+        >
+          <span class="t-ic">🧠</span>
+          <span class="t-txt">Estrés</span>
+        </button>
+      </div>
+
+      <!-- Week bars -->
+      <div class="week-card">
+        <div class="week-head">
+          <div class="week-day" *ngFor="let d of week(); let i = index">
+            {{ d.day }}
+          </div>
+        </div>
+
+        <div class="week-bars">
+          <div
+            class="wcol"
+            *ngFor="let d of week(); let i = index"
+            (click)="selectDay(i)"
+            [class.sel]="i===selectedIndex()"
+          >
+            <div
+              class="bar"
+              [style.height.%]="(barValue(d) / (barMax() || 1)) * 100"
+              [class.orange]="tab()==='SLEEP'"
+              [class.blue]="tab()==='EXERCISE'"
+              [class.green]="tab()==='NUTRITION'"
+              [class.red]="tab()==='STRESS'"
+            ></div>
+            <div class="wlabel">{{ barLabel(d) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- bottom mini charts -->
+      <div class="bottom">
+        <!-- Week Navigation Header -->
+        <div class="week-nav">
+          <button class="nav-btn" type="button" (click)="previousWeek()">
+            ← Anterior
+          </button>
+          <span class="week-range">{{ weekLabel() }}</span>
+          <button class="nav-btn" type="button" (click)="nextWeek()">
+            Siguiente →
+          </button>
+
+          <!-- opcional -->
+          <button class="nav-btn" type="button" (click)="goToCurrentWeek()">
+            Semana actual
+          </button>
+        </div>
+
+        <div class="mini">
+          <div class="mini-head">
+            <span class="mini-ic">🌙</span>
+            <span class="mini-title">Sueño</span>
+          </div>
+
+          <div class="mini-chart">
+            <div class="mini-sub">Horas de sueño por día</div>
+            <div *ngIf="!hasSeriesData(sleepSeries())" class="no-data">
+              Sin datos registrados
+            </div>
+            <svg
+              *ngIf="hasSeriesData(sleepSeries())"
+              viewBox="0 0 300 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                *ngIf="countDataPoints(sleepSeries()) >= 2"
+                class="line orange"
+                [attr.d]="linePath(sleepSeries())"
+              ></path>
+              <ng-container *ngFor="let point of getChartPoints(sleepSeries())">
+                <circle
+                  *ngIf="point.value > 0"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  class="point orange"
+                />
+              </ng-container>
+            </svg>
+            <div class="mini-x">
+              <span *ngFor="let i of [0,1,2,3,4,5,6]"
+                >{{ getXAxisLabel(i) }}</span
+              >
+            </div>
+          </div>
+
+          <button class="btn btn-orange" type="button" (click)="addSueno()">
+            + Añadir Sueño
+          </button>
+        </div>
+
+        <div class="mini">
+          <div class="mini-head">
+            <span class="mini-ic">🏃</span>
+            <span class="mini-title">Ejercicio</span>
+          </div>
+
+          <div class="mini-chart">
+            <div class="mini-row">
+              <span class="mini-sub">Toda la semana</span>
+              <span class="mini-right" *ngIf="hasSeriesData(exerciseSeries())"
+                >{{ seriesSum(exerciseSeries()) | number:'1.0-0' }} mins</span
+              >
+            </div>
+            <div *ngIf="!hasSeriesData(exerciseSeries())" class="no-data">
+              Sin datos registrados
+            </div>
+            <svg
+              *ngIf="hasSeriesData(exerciseSeries())"
+              viewBox="0 0 300 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                *ngIf="countDataPoints(exerciseSeries()) >= 2"
+                class="line blue"
+                [attr.d]="linePath(exerciseSeries())"
+              ></path>
+              <ng-container
+                *ngFor="let point of getChartPoints(exerciseSeries())"
+              >
+                <circle
+                  *ngIf="point.value > 0"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  class="point blue"
+                />
+              </ng-container>
+            </svg>
+            <div class="mini-x">
+              <span *ngFor="let i of [0,1,2,3,4,5,6]"
+                >{{ getXAxisLabel(i) }}</span
+              >
+            </div>
+          </div>
+
+          <button class="btn btn-blue2" type="button" (click)="addEjercicio()">
+            + Añadir Ejercicio
+          </button>
+        </div>
+
+        <div class="mini">
+          <div class="mini-head">
+            <span class="mini-ic">🍎</span>
+            <span class="mini-title">Alimentación</span>
+          </div>
+
+          <div class="mini-chart">
+            <div class="mini-sub">Calidad de alimentación</div>
+            <div *ngIf="!hasSeriesData(nutritionSeries())" class="no-data">
+              Sin datos registrados
+            </div>
+            <svg
+              *ngIf="hasSeriesData(nutritionSeries())"
+              viewBox="0 0 300 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                *ngIf="countDataPoints(nutritionSeries()) >= 2"
+                class="line green"
+                [attr.d]="linePath(nutritionSeries())"
+              ></path>
+              <ng-container
+                *ngFor="let point of getChartPoints(nutritionSeries())"
+              >
+                <circle
+                  *ngIf="point.value > 0"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  class="point green"
+                />
+              </ng-container>
+            </svg>
+            <div class="mini-x">
+              <span *ngFor="let i of [0,1,2,3,4,5,6]"
+                >{{ getXAxisLabel(i) }}</span
+              >
+            </div>
+          </div>
+
+          <button
+            class="btn btn-green"
+            type="button"
+            (click)="addAlimentacion()"
+          >
+            + Añadir Alimentación
+          </button>
+        </div>
+
+        <div class="mini">
+          <div class="mini-head">
+            <span class="mini-ic">🧠</span>
+            <span class="mini-title">Estrés</span>
+          </div>
+
+          <div class="mini-chart">
+            <div class="mini-sub">Niveles de estrés</div>
+            <div *ngIf="!hasSeriesData(stressSeries())" class="no-data">
+              Sin datos registrados
+            </div>
+            <svg
+              *ngIf="hasSeriesData(stressSeries())"
+              viewBox="0 0 300 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                *ngIf="countDataPoints(stressSeries()) >= 2"
+                class="line red"
+                [attr.d]="linePath(stressSeries())"
+              ></path>
+              <ng-container
+                *ngFor="let point of getChartPoints(stressSeries())"
+              >
+                <circle
+                  *ngIf="point.value > 0"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  class="point red"
+                />
+              </ng-container>
+            </svg>
+            <div class="mini-x">
+              <span *ngFor="let i of [0,1,2,3,4,5,6]"
+                >{{ getXAxisLabel(i) }}</span
+              >
+            </div>
+          </div>
+
+          <button class="btn btn-red" type="button" (click)="addEstres()">
+            + Añadir Estrés
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <aside class="right">
+      <div class="day-card">
+        <div class="day-title">{{ selectedDateLabel() }}</div>
+
+        <div class="day-row">
+          <span class="ic">🌙</span>
+          <div class="dtext">
+            <div class="dname">Sueño</div>
+            <div class="dval">
+              {{ getHabitForSelectedDay('SLEEP') || '—' }} hrs
+            </div>
+          </div>
+        </div>
+
+        <div class="day-row">
+          <span class="ic">🏃</span>
+          <div class="dtext">
+            <div class="dname">Ejercicio</div>
+            <div class="dval">
+              {{ getHabitForSelectedDay('EXERCISE') || '—' }} mins
+            </div>
+          </div>
+        </div>
+
+        <div class="day-row">
+          <span class="ic">🍎</span>
+          <div class="dtext">
+            <div class="dname">Alimentación</div>
+            <div class="dval muted">
+              {{ ['—', 'Mala', 'Normal',
+              'Balanceada'][getHabitForSelectedDay('NUTRITION') || 0] }}
+            </div>
+          </div>
+        </div>
+
+        <div class="day-row">
+          <span class="ic">🧠</span>
+          <div class="dtext">
+            <div class="dname">Estrés</div>
+            <div class="dval stress">
+              {{ ['—', 'Bajo', 'Moderado',
+              'Alto'][getHabitForSelectedDay('STRESS') || 0] }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-green wide" type="button" (click)="verHistorial()">
+        Ver Historial Completo
+      </button>
+      <button
+        class="btn btn-blue wide"
+        type="button"
+        (click)="generarRecomendacion()"
+      >
+        Generar recomendación
+      </button>
+    </aside>
+  </section>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Registrar Hábito</h2>
+
+      <div class="modal-form">
+        <div class="form-group">
+          <label>Tipo de Hábito</label>
+          <div class="habit-type-display">
+            <span *ngIf="modalType()==='SLEEP'">🌙 Sueño</span>
+            <span *ngIf="modalType()==='EXERCISE'">🏃 Ejercicio</span>
+            <span *ngIf="modalType()==='NUTRITION'">🍎 Alimentación</span>
+            <span *ngIf="modalType()==='STRESS'">🧠 Estrés</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Valor</label>
+
+          <!-- ✅ FIX signals + ngModel -->
+          <input
+            type="number"
+            [ngModel]="modalValue()"
+            (ngModelChange)="modalValue.set($event)"
+          />
+
+          <small>
+            <span *ngIf="modalType()==='SLEEP'">Horas de sueño</span>
+            <span *ngIf="modalType()==='EXERCISE'">Minutos de ejercicio</span>
+            <span *ngIf="modalType()==='NUTRITION'"
+              >1-3 (Mala, Normal, Balanceada)</span
+            >
+            <span *ngIf="modalType()==='STRESS'"
+              >1-3 (Bajo, Moderado, Alto)</span
+            >
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha</label>
+          <input
+            type="date"
+            [ngModel]="modalDate()"
+            (ngModelChange)="modalDate.set($event)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Notas (opcional)</label>
+          <textarea
+            [ngModel]="modalNotes()"
+            (ngModelChange)="modalNotes.set($event)"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-gray" type="button" (click)="closeModal()">
+          Cancelar
+        </button>
+        <button class="btn btn-green" type="button" (click)="saveHabit()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

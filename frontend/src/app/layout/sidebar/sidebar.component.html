@@ -1,0 +1,13 @@
+<aside class="sidebar">
+  <nav class="menu">
+    <a
+      class="item"
+      *ngFor="let it of items()"
+      [routerLink]="it.path"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: it.exact || false }"
+    >
+      {{ it.label }}
+    </a>
+  </nav>
+</aside>

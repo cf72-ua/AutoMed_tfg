@@ -1,0 +1,76 @@
+<nav class="nav">
+  <!-- Left: brand -->
+  <a class="brand" routerLink="/">
+    <span class="brand-frame">
+      <img class="brand-logo" src="assets/AutoMed_logo.png" alt="AutoMed" />
+    </span>
+  </a>
+
+  <!-- RIGHT -->
+  <div class="nav-right">
+    <!-- ====== PÚBLICO (no logueado) ====== -->
+    <ng-container *ngIf="!isLoggedIn()">
+      <div class="links">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+        <a routerLink="/servicios" routerLinkActive="active">Servicios</a>
+        <a routerLink="/contacto" routerLinkActive="active">Contacto</a>
+      </div>
+
+      <div class="cta">
+        <a class="btn btn-green" routerLink="/auth/login" [queryParams]="{ as: 'paciente' }">Pacientes</a>
+        <a class="btn btn-blue" routerLink="/auth/login" [queryParams]="{ as: 'doctor' }">Doctores</a>
+      </div>
+    </ng-container>
+
+    <!-- ====== LOGUEADO ====== -->
+    <ng-container *ngIf="isLoggedIn()">
+      <div class="logged">
+        <!-- Campana -->
+        <a class="icon-btn" routerLink="/notificaciones" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" width="26" height="26">
+            <path
+              fill="currentColor"
+              d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"
+            />
+          </svg>
+        </a>
+
+        <!-- Inicio -->
+        <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          Inicio
+        </a>
+
+        <!-- Usuario + dropdown -->
+        <div class="user-menu" [class.open]="menuOpen">
+          <button class="user-btn" type="button" (click)="toggleMenu()" aria-label="Menú de usuario">
+            <span class="user-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28">
+                <path
+                  fill="currentColor"
+                  d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5V20h16v-1.5C20 16 16.42 14 12 14Z"
+                />
+              </svg>
+            </span>
+
+            <span class="user-text">Hola, {{ role() || 'Usuario' }}</span>
+
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22">
+                <path fill="currentColor" d="M7 10l5 5 5-5z" />
+              </svg>
+            </span>
+          </button>
+
+          <div class="dropdown" *ngIf="menuOpen">
+            <button class="dropdown-item" type="button" (click)="logout()">
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay para cerrar al click fuera -->
+      <div class="overlay" *ngIf="menuOpen" (click)="closeMenu()"></div>
+    </ng-container>
+  </div>
+</nav>

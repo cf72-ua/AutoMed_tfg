@@ -1,0 +1,51 @@
+{
+  "name": "automed-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^17.0.0",
+    "@angular/common": "^17.0.0",
+    "@angular/compiler": "^17.0.0",
+    "@angular/core": "^17.0.0",
+    "@angular/forms": "^17.0.0",
+    "@angular/material": "^17.0.0",
+    "@angular/platform-browser": "^17.0.0",
+    "@angular/platform-browser-dynamic": "^17.0.0",
+    "@angular/router": "^17.0.0",
+    "@ngrx/effects": "^17.0.0",
+    "@ngrx/entity": "^17.0.0",
+    "@ngrx/store": "^17.0.0",
+    "rxjs": "^7.8.1",
+    "socket.io-client": "^4.7.2",
+    "tslib": "^2.6.2",
+    "zone.js": "^0.14.2"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.0.0",
+    "@angular/cli": "^17.0.0",
+    "@angular/compiler-cli": "^17.0.0",
+    "@angular/language-service": "^17.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^20.10.0",
+    "eslint": "^10.2.1",
+    "globals": "^17.5.0",
+    "jasmine-core": "^5.1.0",
+    "jiti": "^2.6.1",
+    "karma": "^6.4.2",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.59.0"
+  }
+}

@@ -1,0 +1,40 @@
+.gitignore creado para el proyecto
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.local
+backend/.DS_Store
+backend/*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/out-tsc/
+frontend/.env
+frontend/.env.local
+frontend/.DS_Store
+frontend/.angular
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+out/
+
+# Temp
+temp/
+tmp/
+
+funcionalidades.pdf
+ESTRUCTURA_PROYECTO.md

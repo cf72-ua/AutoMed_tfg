@@ -1,0 +1,214 @@
+.register-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px 16px;
+  background: #ffffff;
+}
+
+.register-card {
+  width: min(560px, 92vw);
+  background: #eaf6ff;
+  border-radius: 10px;
+  padding: 34px 28px 42px;
+
+  /* espacio para el logo grande */
+  padding-top: 190px;
+
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+.brand {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.brand-logo {
+  height: 280px;  /* ajusta si quieres como login */
+  width: auto;
+  max-height: none;
+  max-width: none;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.14));
+}
+
+.title {
+  text-align: center;
+  font-size: 44px;
+  line-height: 1.1;
+  margin: 0 0 22px;
+  color: #0f4b7a;
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+.form-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 26px 26px 22px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+  position: relative;
+  z-index: 4; /* por encima de ilustraciones */
+  border: 1px solid rgba(16, 65, 105, 0.18);
+}
+
+form {
+  display: grid;
+  gap: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a2b3b;
+  margin-bottom: 8px;
+}
+
+.input-with-icon {
+  position: relative;
+
+  .icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #8b8f96;
+    background: #f2f3f5;
+    border: 1px solid #e5e8ee;
+  }
+
+  input {
+    width: 100%;
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #d7dde7;
+    background: #ffffff;
+    padding: 0 14px 0 62px;
+    font-size: 15px;
+    outline: none;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+    &::placeholder {
+      color: #9aa3ad;
+    }
+
+    &:focus {
+      border-color: #2c78c9;
+      box-shadow: 0 0 0 4px rgba(44, 120, 201, 0.12);
+    }
+  }
+}
+
+.primary-btn {
+  margin-top: 8px;
+  height: 56px;
+  border-radius: 10px;
+  border: none;
+  background: #4e9d1d;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 14px rgba(78, 157, 29, 0.28);
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.login-link {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 15px;
+  color: #1a2b3b;
+  font-weight: 650;
+
+  .link {
+    color: #1a64c7;
+    text-decoration: none;
+    font-weight: 900;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Personaje: nace desde el bottom del card azul y es MUCHO más grande */
+.illu-left {
+  position: absolute;
+  left: -210px;      /* desplázala a la izquierda */
+  bottom: -130px;         /* <-- CLAVE: empieza desde el bottom del card azul */
+  width: 520px;      /* contenedor grande */
+  height: 460px;
+  pointer-events: none;
+  z-index: 4;        /* por delante del form */
+
+  .illu {
+    position: absolute;
+    left: 0;
+    bottom: 0;       /* pegada al bottom del contenedor (y del card) */
+
+    width: 420px;    /* tamaño base grande */
+    max-width: none;
+    height: auto;
+
+    transform: scale(1.35);           /* agranda incluso si el PNG tiene mucho aire */
+    transform-origin: bottom left;
+
+    filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.20));
+  }
+}
+
+@media (max-width: 520px) {
+  .register-page {
+    padding: 18px 12px;
+  }
+
+  .register-card {
+    width: min(520px, 96vw);
+    padding: 22px 16px 28px;
+    padding-top: 125px; /* coherente con logo 170 */
+    border-radius: 12px;
+  }
+
+  .brand { top: -2px; }
+  .brand-logo { height: 170px; }
+
+  .title {
+    font-size: 32px;
+    margin: 0 0 16px;
+  }
+
+  .form-box {
+    padding: 18px 14px 16px;
+    border-radius: 12px;
+  }
+
+  /* 👇 CLAVE: replica el "efecto" de desktop */
+  .illu-left {
+    left: -150px;      /* parecido al -210px en desktop, pero adaptado */
+    bottom: -105px;    /* <-- IMPORTANTÍSIMO: en desktop es -130px */
+    width: 420px;
+    height: 360px;
+
+    .illu {
+      width: 320px;
+      transform: scale(1.25);
+    }
+  }
+}

@@ -1,0 +1,197 @@
+<div class="page">
+  <!-- Error message -->
+  <div class="error-banner" *ngIf="loadingError()">
+    <span>{{ loadingError() }}</span>
+    <button type="button" (click)="loadingError.set(null)">×</button>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-left">
+      <h1>Mi Calendario</h1>
+      <p>Gestiona tus citas médicas y tu plan de medicación</p>
+
+      <div class="month-picker">
+        <button class="icon" type="button" (click)="prevMonth()" aria-label="Mes anterior">‹</button>
+
+        <div class="month-select">
+          <span class="label">{{ monthLabel() }}</span>
+          <select (change)="setMonth(+($any($event.target).value))" [value]="viewMonth()">
+            <option *ngFor="let opt of monthOptions()" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <button class="icon" type="button" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-illustration">
+        <!-- aquí puedes meter tu imagen de fondo/ilustración -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <section class="content">
+    <!-- Calendar -->
+    <div class="calendar-card">
+      <div class="cal-header">
+        <span class="cal-title">{{ monthLabel() }}</span>
+      </div>
+
+      <div class="cal-grid">
+        <div class="dow">Lun</div>
+        <div class="dow">Mar</div>
+        <div class="dow">Mié</div>
+        <div class="dow">Jue</div>
+        <div class="dow">Vie</div>
+        <div class="dow">Sáb</div>
+        <div class="dow">Dom</div>
+
+        <ng-container *ngFor="let week of monthGrid(); trackBy: trackByIdx">
+          <ng-container *ngFor="let cell of week; trackBy: trackByIdx">
+            <div class="cell" [class.empty]="!cell.day">
+              <div class="day" *ngIf="cell.day">{{ cell.day }}</div>
+
+              <div class="events" *ngIf="cell.day">
+                <ng-container *ngFor="let ev of eventsFor(cell.dateStr); trackBy: trackByIdx">
+                  <div class="event" [class.blue]="ev.type==='CONSULTA'" [class.orange]="ev.type==='MEDICACION'">
+                    {{ ev.title }}
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+
+      <div class="legend">
+        <span class="pill blue"></span> Consulta Médica
+        <span class="pill orange"></span> Recordatorio de Medicación
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <aside class="side">
+      <!-- Appointments Section -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Próximas Citas</div>
+          <button class="btn-add" type="button" (click)="openAppointmentForm()" title="Agregar cita">+</button>
+        </div>
+
+        <div *ngIf="isLoading()" class="loading">Cargando...</div>
+
+        <div *ngIf="upcoming().length === 0 && !isLoading()" class="empty-state">
+          No hay citas programadas
+        </div>
+
+        <div class="appt" *ngFor="let a of upcoming(); trackBy: trackByIdx">
+          <div class="appt-icon">🗒️</div>
+          <div class="appt-body">
+            <div class="appt-title">{{ a.title }}</div>
+            <div class="appt-meta">{{ a.dateLabel }}</div>
+            <div class="appt-meta">{{ a.doctor }}</div>
+            <div class="appt-meta">{{ a.place }}</div>
+          </div>
+          <button class="appt-delete" type="button" (click)="deleteAppointment(a.id)" aria-label="Eliminar">✕</button>
+        </div>
+      </div>
+
+      <!-- Medications Section -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Alarma de Medicación</div>
+          <button class="btn-add" type="button" (click)="openMedicationForm()" title="Agregar medicación">+</button>
+        </div>
+
+        <div *ngIf="alarms().length === 0" class="empty-state">
+          Sin alarmas de medicación
+        </div>
+
+        <div class="alarm" *ngFor="let al of alarms(); trackBy: trackByIdx">
+          <div class="alarm-icon">⏰</div>
+          <div class="alarm-body">
+            <div class="alarm-name">{{ al.name }}</div>
+            <div class="alarm-dose">{{ al.dose }}</div>
+          </div>
+          <div class="alarm-time">{{ al.timeLabel }}</div>
+          <button class="alarm-delete" type="button" (click)="deleteMedication(al.id)" aria-label="Eliminar">✕</button>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- Appointment Form Modal -->
+  <div class="modal-overlay" *ngIf="showAppointmentForm()" (click)="closeAppointmentForm()"></div>
+  <div class="modal" *ngIf="showAppointmentForm()">
+    <div class="modal-header">
+      <h3>Agregar Cita</h3>
+      <button class="close-btn" type="button" (click)="closeAppointmentForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" placeholder="Ej: Consulta Médica" [(ngModel)]="appointmentForm()['title']" />
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" [(ngModel)]="appointmentForm()['date']" required />
+      </div>
+      <div class="form-group">
+        <label>Hora</label>
+        <input type="time" [(ngModel)]="appointmentForm()['time']" />
+      </div>
+      <div class="form-group">
+        <label>Lugar</label>
+        <input type="text" placeholder="Ej: Consultorio 101" [(ngModel)]="appointmentForm()['place']" />
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea placeholder="Notas adicionales" [(ngModel)]="appointmentForm()['notes']"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" type="button" (click)="closeAppointmentForm()">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="submitAppointment()">Guardar Cita</button>
+    </div>
+  </div>
+
+  <!-- Medication Form Modal -->
+  <div class="modal-overlay" *ngIf="showMedicationForm()" (click)="closeMedicationForm()"></div>
+  <div class="modal" *ngIf="showMedicationForm()">
+    <div class="modal-header">
+      <h3>Agregar Medicación</h3>
+      <button class="close-btn" type="button" (click)="closeMedicationForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre de la Medicación</label>
+        <input type="text" placeholder="Ej: Ibuprofeno" [(ngModel)]="medicationForm()['medicationName']" required />
+      </div>
+      <div class="form-group">
+        <label>Dosis</label>
+        <input type="text" placeholder="Ej: 200 mg" [(ngModel)]="medicationForm()['dose']" required />
+      </div>
+      <div class="form-group">
+        <label>Frecuencia</label>
+        <select [(ngModel)]="medicationForm()['frequency']">
+          <option value="daily">Diariamente</option>
+          <option value="twice_daily">Dos veces al día</option>
+          <option value="three_times_daily">Tres veces al día</option>
+          <option value="weekly">Semanalmente</option>
+          <option value="as_needed">Cuando sea necesario</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Hora</label>
+        <input type="time" [(ngModel)]="medicationForm()['time']" required />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" type="button" (click)="closeMedicationForm()">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="submitMedication()">Guardar Medicación</button>
+    </div>
+  </div>
+</div>

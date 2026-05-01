@@ -1,0 +1,83 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="brand">
+    <img class="brand-logo" src="assets/AutoMed_logo.png" alt="AutoMed" />
+    </div>
+
+    <h1 class="title">Iniciar Sesión</h1>
+
+    <div class="form-box">
+      <form (ngSubmit)="onSubmit()" autocomplete="on">
+        <div class="field">
+          <label for="dni">DNI / NIE</label>
+
+          <div class="input-with-icon">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path
+                  fill="currentColor"
+                  d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.2-7.3 4.57a2 2 0 0 1-2.14 0L4 8.2V6l7.7 4.8a.5.5 0 0 0 .54 0L20 6v2.2Z"
+                />
+              </svg>
+            </span>
+
+            <input
+              id="dni"
+              type="text"
+              [(ngModel)]="dni"
+              name="dni"
+              placeholder="DNI / NIE"
+              required
+              autocomplete="username"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="row-between">
+            <label for="password">Contraseña</label>
+          </div>
+
+          <div class="input-with-icon">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path
+                  fill="currentColor"
+                  d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-7-2a2 2 0 0 1 4 0v2h-4V6Zm3 10.73V17a1 1 0 1 1-2 0v-.27a2 2 0 1 1 2 0Z"
+                />
+              </svg>
+            </span>
+
+            <input
+              id="password"
+              type="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Contraseña"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+        </div>
+
+        <a class="forgot" href="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
+
+        <button class="primary-btn" type="submit" [disabled]="!dni || !password">
+          Iniciar Sesión
+        </button>
+
+        <p class="signup">
+          ¿No tienes una cuenta?
+          <a class="signup-link" href="/auth/register">Regístrate aquí</a>
+        </p>
+      </form>
+    </div>
+    <div class="illu-left" aria-hidden="true">
+      <img class="illu" src="assets/woman_2.png" alt="" />
+    </div>
+
+    <div class="illu-right" aria-hidden="true">
+      <img class="illu" src="assets/doctor_2.webp" alt="" />
+    </div>
+  </div>
+</div>

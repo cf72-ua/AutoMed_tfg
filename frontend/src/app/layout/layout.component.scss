@@ -1,0 +1,15 @@
+.page {
+  min-height: calc(100vh - 78px); /* altura del navbar */
+  padding: 0;
+}
+
+.layout {
+  display: flex;
+}
+
+.content {
+  flex: 1;
+  min-height: calc(100vh - 78px);
+  padding: 22px;
+  background: #ffffff;
+}

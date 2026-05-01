@@ -1,0 +1,95 @@
+<div class="home">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <h1>Tu Salud, Nuestra Misión</h1>
+      <p>Conectamos Pacientes y Doctores en un solo lugar</p>
+
+      <div class="hero-actions">
+        <a class="btn btn-green" routerLink="/auth/login" [queryParams]="{ as: 'paciente' }">Para Pacientes</a>
+        <a class="btn btn-blue" routerLink="/auth/login" [queryParams]="{ as: 'doctor' }">Para Doctores</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-ill">
+        <!-- Reemplaza por tu imagen real -->
+        <img src="assets/illustrations/home-hero.png" alt="" />
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE CARDS -->
+  <section class="features">
+    <article class="fcard">
+      <div class="ficon">
+        <img src="assets/icons/calendar.png" alt="" />
+      </div>
+      <div class="fbody">
+        <h3>Agenda tus Citas</h3>
+        <p>Solicita y gestiona tus citas médicas rápidamente.</p>
+      </div>
+    </article>
+
+    <article class="fcard">
+      <div class="ficon">
+        <img src="assets/icons/medical-bag.png" alt="" />
+      </div>
+      <div class="fbody">
+        <h3>Historial Médico</h3>
+        <p>Accede a tu historial clínico en todo momento.</p>
+      </div>
+    </article>
+
+    <article class="fcard">
+      <div class="ficon">
+        <img src="assets/icons/laptop.png" alt="" />
+      </div>
+      <div class="fbody">
+        <h3>Consultas en Línea</h3>
+        <p>Realiza consultas virtuales con tu doctor.</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- SECTION TITLE -->
+  <section class="section-title">
+    <div class="line"></div>
+    <div class="title-wrap">
+      <h2>Soluciones para Todos</h2>
+      <p>Herramientas pensadas para ti</p>
+    </div>
+    <div class="line"></div>
+  </section>
+
+  <!-- TWO BIG CARDS -->
+  <section class="two-cards">
+    <article class="big-card">
+      <div class="big-img">
+        <img src="assets/illustrations/for-patients.png" alt="" />
+      </div>
+      <div class="big-body">
+        <h3>Para <span class="green">Pacientes</span></h3>
+        <ul>
+          <li><span class="check green">✓</span> Consulta con tus doctores</li>
+          <li><span class="check green">✓</span> Revisa tus estudios</li>
+          <li><span class="check green">✓</span> Recibe recordatorios</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="big-card">
+      <div class="big-img">
+        <img src="assets/illustrations/for-doctors.png" alt="" />
+      </div>
+      <div class="big-body">
+        <h3>Para <span class="blue">Doctores</span></h3>
+        <ul>
+          <li><span class="check blue">✓</span> Gestiona tus pacientes</li>
+          <li><span class="check blue">✓</span> Accede a historiales</li>
+          <li><span class="check blue">✓</span> Ofrece telemedicina</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+</div>
