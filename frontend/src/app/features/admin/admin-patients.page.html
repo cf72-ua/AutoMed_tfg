@@ -1,10 +1,136 @@
 <div class="admin-container">
   <div class="admin-header">
-    <h2>Pacientes</h2>
-    <p>
-      Consulta los perfiles clínicos registrados y su actividad principal en
-      AutoMed.
-    </p>
+    <div>
+      <h2>Pacientes</h2>
+      <p>
+        Consulta los perfiles clínicos registrados y su actividad principal en
+        AutoMed.
+      </p>
+    </div>
+    <button class="header-action" type="button" (click)="openCreateModal()">
+      Crear paciente
+    </button>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()"></div>
+  <div class="admin-modal" *ngIf="showCreateModal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div>
+        <h3>Crear paciente</h3>
+        <p>Configura los datos de acceso y el perfil inicial.</p>
+      </div>
+      <button class="modal-close" type="button" (click)="closeCreateModal()" aria-label="Cerrar">
+        ×
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="createPatient()">
+      <div class="form-row">
+        <div class="filter-field">
+          <label for="patientFullName">Nombre completo</label>
+          <input
+            id="patientFullName"
+            class="form-control"
+            name="fullName"
+            type="text"
+            placeholder="Nombre completo"
+            [(ngModel)]="form.fullName"
+            required
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="patientDni">DNI</label>
+          <input
+            id="patientDni"
+            class="form-control"
+            name="dni"
+            type="text"
+            placeholder="DNI / NIE"
+            [(ngModel)]="form.dni"
+            required
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="patientPassword">Contraseña</label>
+          <input
+            id="patientPassword"
+            class="form-control"
+            name="password"
+            type="password"
+            placeholder="Contraseña inicial"
+            [(ngModel)]="form.password"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="filter-field">
+          <label for="patientEmail">Email</label>
+          <input
+            id="patientEmail"
+            class="form-control"
+            name="email"
+            type="email"
+            placeholder="Email"
+            [(ngModel)]="form.email"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="patientPhone">Teléfono</label>
+          <input
+            id="patientPhone"
+            class="form-control"
+            name="phone"
+            type="tel"
+            placeholder="Teléfono"
+            [(ngModel)]="form.phone"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="patientBirthDate">Fecha nacimiento</label>
+          <input
+            id="patientBirthDate"
+            class="form-control"
+            name="birthDate"
+            type="date"
+            [(ngModel)]="form.birthDate"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="patientSex">Sexo</label>
+          <select
+            id="patientSex"
+            class="form-select"
+            name="sex"
+            [(ngModel)]="form.sex"
+          >
+            <option value="">Sin especificar</option>
+            <option value="female">Mujer</option>
+            <option value="male">Hombre</option>
+            <option value="other">Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="secondary-btn" type="button" (click)="closeCreateModal()">
+          Cancelar
+        </button>
+        <button class="clear-btn" type="submit" [disabled]="isSaving">
+          {{ isSaving ? "Creando..." : "Crear paciente" }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
   </div>
 
   <div class="filters-section">
@@ -55,7 +181,8 @@
         <col style="width: 10%" />
         <col style="width: 9%" />
         <col style="width: 10%" />
-        <col style="width: 10%" />
+        <col style="width: 9%" />
+        <col style="width: 11%" />
       </colgroup>
       <thead>
         <tr>
@@ -67,6 +194,7 @@
           <th class="cell-center">Citas</th>
           <th class="cell-center">Hábitos</th>
           <th class="cell-center">Reportes</th>
+          <th class="cell-right">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -87,6 +215,22 @@
           <td class="cell-center">{{ patient.appointmentCount }}</td>
           <td class="cell-center">{{ patient.habitCount }}</td>
           <td class="cell-center">{{ patient.reportCount }}</td>
+          <td class="cell-right">
+            <button
+              class="table-btn"
+              type="button"
+              (click)="togglePatientStatus(patient)"
+            >
+              {{ patient.status === "active" ? "Desactivar" : "Activar" }}
+            </button>
+            <button
+              class="table-btn danger"
+              type="button"
+              (click)="deletePatient(patient)"
+            >
+              Eliminar
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>

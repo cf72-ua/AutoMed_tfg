@@ -2,6 +2,8 @@ import express, { Request, Response, Router } from "express";
 import { getDatabase } from "../db/connection";
 import { authenticateJWT } from "../middleware/auth.middleware";
 import { requireRole } from "../middleware/role.middleware";
+// @ts-ignore
+import bcryptjs from "bcryptjs";
 
 const router: Router = express.Router();
 
@@ -126,6 +128,165 @@ router.get("/patients", async (_req: Request, res: Response) => {
   } catch (error) {
     console.error("Error in GET /admin/patients", error);
     res.status(500).json({ error: "Failed to fetch patients" });
+  }
+});
+
+router.post("/patients", async (req: Request, res: Response) => {
+  const db = getDatabase();
+  const connection = await db.getConnection();
+
+  try {
+    const dni = String(req.body.dni || "").trim();
+    const password = String(req.body.password || "").trim();
+    const fullName = String(req.body.fullName || "").trim();
+    const email = req.body.email ? String(req.body.email).trim() : null;
+    const phone = req.body.phone ? String(req.body.phone).trim() : null;
+    const birthDate = req.body.birthDate
+      ? String(req.body.birthDate).trim()
+      : null;
+    const sex = req.body.sex ? String(req.body.sex).trim() : null;
+
+    if (!dni || !password || !fullName) {
+      res.status(400).json({
+        error: "DNI, contraseña y nombre completo son requeridos",
+      });
+      return;
+    }
+
+    await connection.beginTransaction();
+
+    const [existingUsers]: any = await connection.query(
+      "SELECT id FROM users WHERE dni = ?",
+      [dni],
+    );
+
+    if (existingUsers.length > 0) {
+      await connection.rollback();
+      res.status(409).json({ error: "El DNI ya está registrado" });
+      return;
+    }
+
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    const [userResult]: any = await connection.query(
+      `INSERT INTO users (dni, password_hash, full_name, email, phone, status)
+       VALUES (?, ?, ?, ?, ?, 'active')`,
+      [dni, hashedPassword, fullName, email, phone],
+    );
+
+    const userId = userResult.insertId;
+    const [roles]: any = await connection.query(
+      "SELECT id FROM roles WHERE name = 'PACIENTE'",
+    );
+
+    let roleId = roles[0]?.id;
+    if (!roleId) {
+      const [roleResult]: any = await connection.query(
+        "INSERT INTO roles (name) VALUES ('PACIENTE')",
+      );
+      roleId = roleResult.insertId;
+    }
+
+    await connection.query(
+      "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+      [userId, roleId],
+    );
+
+    const [profileResult]: any = await connection.query(
+      `INSERT INTO patient_profiles (user_id, birth_date, sex)
+       VALUES (?, ?, ?)`,
+      [userId, birthDate || null, sex || null],
+    );
+
+    await connection.commit();
+
+    res.status(201).json({
+      patientProfileId: profileResult.insertId,
+      userId,
+      fullName,
+      dni,
+      email,
+      phone,
+      status: "active",
+      birthDate,
+      sex,
+      appointmentCount: 0,
+      habitCount: 0,
+      reportCount: 0,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Error in POST /admin/patients", error);
+    res.status(500).json({ error: "Failed to create patient" });
+  } finally {
+    connection.release();
+  }
+});
+
+router.patch("/patients/:userId/status", async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.params.userId);
+    const status = String(req.body.status || "").trim();
+
+    if (!userId || !["active", "inactive"].includes(status)) {
+      res.status(400).json({ error: "Invalid userId or status" });
+      return;
+    }
+
+    const db = getDatabase();
+    const [result]: any = await db.query(
+      `UPDATE users u
+       JOIN user_roles ur ON u.id = ur.user_id
+       JOIN roles r ON ur.role_id = r.id
+       SET u.status = ?
+       WHERE u.id = ? AND r.name = 'PACIENTE'`,
+      [status, userId],
+    );
+
+    if (!result.affectedRows) {
+      res.status(404).json({ error: "Patient not found" });
+      return;
+    }
+
+    res.json({ userId, status });
+  } catch (error) {
+    console.error("Error in PATCH /admin/patients/:userId/status", error);
+    res.status(500).json({ error: "Failed to update patient status" });
+  }
+});
+
+router.delete("/patients/:userId", async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.params.userId);
+
+    if (!userId) {
+      res.status(400).json({ error: "Invalid userId" });
+      return;
+    }
+
+    const db = getDatabase();
+    const [result]: any = await db.query(
+      `DELETE u FROM users u
+       JOIN user_roles ur ON u.id = ur.user_id
+       JOIN roles r ON ur.role_id = r.id
+       WHERE u.id = ? AND r.name = 'PACIENTE'`,
+      [userId],
+    );
+
+    if (!result.affectedRows) {
+      res.status(404).json({ error: "Patient not found" });
+      return;
+    }
+
+    res.json({ message: "Patient deleted" });
+  } catch (error: any) {
+    console.error("Error in DELETE /admin/patients/:userId", error);
+    res.status(error?.code === "ER_ROW_IS_REFERENCED_2" ? 409 : 500).json({
+      error:
+        error?.code === "ER_ROW_IS_REFERENCED_2"
+          ? "Patient has related records and cannot be deleted"
+          : "Failed to delete patient",
+    });
   }
 });
 

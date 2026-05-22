@@ -48,12 +48,18 @@ export class AuthService {
   /**
    * Registrar nuevo usuario por DNI
    */
-  register(dni: string, password: string, fullName: string): Observable<any> {
+  register(
+    dni: string,
+    password: string,
+    fullName: string,
+    email?: string,
+  ): Observable<any> {
     return this.apiService
       .post("/auth/register", {
         dni,
         password,
         fullName,
+        email,
       })
       .pipe(
         tap((response: any) => {
@@ -80,6 +86,15 @@ export class AuthService {
           }
         }),
       );
+  }
+
+  /**
+   * Solicitar una contraseña nueva por correo
+   */
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.apiService.post<{ message: string }>("/auth/forgot-password", {
+      email,
+    });
   }
 
   /**

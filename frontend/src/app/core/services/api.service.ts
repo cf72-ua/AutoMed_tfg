@@ -64,6 +64,19 @@ export class ApiService {
   }
 
   /**
+   * PATCH request
+   */
+  patch<T>(endpoint: string, body: any, options?: any): Observable<T> {
+    const headers = this.getHeaders();
+    const config = { ...options, headers };
+    return this.http.patch<T>(
+      `${this.apiUrl}${endpoint}`,
+      body,
+      config,
+    ) as Observable<T>;
+  }
+
+  /**
    * DELETE request
    */
   delete<T>(endpoint: string, options?: any): Observable<T> {

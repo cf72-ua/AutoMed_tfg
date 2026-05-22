@@ -11,15 +11,18 @@ import {
 } from "@models/user.dto";
 import { UserRole } from "../types/index.d";
 import { getDatabase } from "../db/connection";
+import { EmailService } from "./email.service";
 // @ts-ignore
 import bcryptjs from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
+import crypto from "crypto";
 
 type Role = "PACIENTE" | "DOCTOR" | "ADMIN" | null;
 
 export class AuthService {
   private jwtSecret =
     process.env.JWT_SECRET || "your_jwt_secret_key_change_in_production";
+  private emailService = new EmailService();
 
   /**
    * Registrar nuevo usuario por DNI
@@ -148,6 +151,10 @@ export class AuthService {
         throw new Error("DNI o contraseña incorrectos");
       }
 
+      if (user.status !== "active") {
+        throw new Error("Usuario inactivo. Contacta con administración");
+      }
+
       // Obtener usuario con datos adicionales
       const userWithRole = await this.getUserById(user.id);
       const token = await this.generateToken(userWithRole, user.role);
@@ -159,6 +166,55 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Generar una contraseña nueva y enviarla al correo del usuario.
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const db = getDatabase();
+    const normalizedEmail = email.trim().toLowerCase();
+    const connection = await db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [users]: any = await connection.query(
+        "SELECT id, full_name, email FROM users WHERE LOWER(email) = ?",
+        [normalizedEmail],
+      );
+
+      if (users.length === 0) {
+        throw new Error("No existe ningún usuario con ese correo");
+      }
+
+      const user = users[0];
+      const newPassword = this.generateTemporaryPassword();
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+      await connection.query(
+        "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [hashedPassword, user.id],
+      );
+
+      await this.emailService.sendMail({
+        to: user.email,
+        subject: "Tu nueva contraseña de AutoMed",
+        text: this.buildForgotPasswordText(user.full_name, newPassword),
+        html: this.buildForgotPasswordHtml(user.full_name, newPassword),
+      });
+
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+    return {
+      message: "Se ha enviado una nueva contraseña al correo indicado",
+    };
   }
 
   /**
@@ -177,6 +233,96 @@ export class AuthService {
     }
 
     return users[0];
+  }
+
+  private generateTemporaryPassword(): string {
+    return `AutoMed-${crypto.randomBytes(6).toString("base64url")}`;
+  }
+
+  private buildForgotPasswordText(
+    fullName: string | null,
+    newPassword: string,
+  ): string {
+    return [
+      `Hola ${fullName || "usuario"},`,
+      "",
+      "Hemos generado una nueva contraseña para tu cuenta de AutoMed.",
+      "",
+      `Nueva contraseña: ${newPassword}`,
+      "",
+      "Por seguridad, inicia sesión y cámbiala cuanto antes.",
+      "",
+      "Si no solicitaste este cambio, contacta con administración.",
+      "",
+      "AutoMed",
+    ].join("\n");
+  }
+
+  private buildForgotPasswordHtml(
+    fullName: string | null,
+    newPassword: string,
+  ): string {
+    const safeName = this.escapeHtml(fullName || "usuario");
+    const safePassword = this.escapeHtml(newPassword);
+
+    return `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tu nueva contraseña de AutoMed</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f3f8fc;font-family:Arial,Helvetica,sans-serif;color:#1a2b3b;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f8fc;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #dcecf7;border-radius:14px;overflow:hidden;box-shadow:0 12px 28px rgba(15,75,122,0.12);">
+            <tr>
+              <td style="background:#eaf6ff;padding:28px 30px 22px;text-align:center;border-bottom:4px solid #4e9d1d;">
+                <div style="font-size:30px;font-weight:900;letter-spacing:0;color:#0f4b7a;line-height:1;">AutoMed</div>
+                <div style="margin-top:8px;font-size:14px;font-weight:700;color:#31729c;">Atencion sanitaria conectada</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px 30px 10px;">
+                <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;color:#0f4b7a;font-weight:900;">Nueva contraseña generada</h1>
+                <p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#31485c;">Hola ${safeName}, hemos generado una nueva contraseña para que puedas volver a acceder a tu cuenta de AutoMed.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 30px 24px;">
+                <div style="background:#f7fbfe;border:1px solid #cfe4f3;border-radius:12px;padding:18px;text-align:center;">
+                  <div style="font-size:13px;font-weight:800;text-transform:uppercase;color:#31729c;margin-bottom:10px;">Tu nueva contraseña</div>
+                  <div style="display:inline-block;background:#0f4b7a;color:#ffffff;border-radius:10px;padding:14px 18px;font-size:22px;font-weight:900;letter-spacing:1px;font-family:Consolas,Menlo,Monaco,monospace;">${safePassword}</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 30px 30px;">
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#31485c;">Por seguridad, inicia sesion y cambiala cuanto antes desde tu perfil.</p>
+                <div style="background:#fff8e8;border-left:4px solid #f2b84b;border-radius:8px;padding:14px 16px;color:#5b4320;font-size:14px;line-height:1.5;">Si no solicitaste este cambio, contacta con administracion para revisar tu cuenta.</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0f4b7a;padding:18px 30px;text-align:center;color:#d9eefb;font-size:13px;line-height:1.5;">
+                AutoMed · Gestion medica digital
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   /**

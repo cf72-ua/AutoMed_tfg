@@ -33,6 +33,10 @@ export interface LoginDto {
   password: string;
 }
 
+export interface ForgotPasswordDto {
+  email: string;
+}
+
 export interface LoginResponse {
   token: string;
   user: UserResponse;

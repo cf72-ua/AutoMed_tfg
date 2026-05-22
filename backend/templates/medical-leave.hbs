@@ -3,7 +3,9 @@
     <meta charset="UTF-8" />
     <title>{{title}}</title>
     <style>
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         font-family: "Segoe UI", Arial, sans-serif;
@@ -103,7 +105,9 @@
         align-items: end;
         gap: 24px;
       }
-      .signature-box { text-align: center; }
+      .signature-box {
+        text-align: center;
+      }
       .signature-image {
         height: 58px;
         max-width: 170px;
@@ -142,8 +146,10 @@
         </div>
         <div class="meta">
           <span class="pill">Documento clínico</span><br />
-          <strong>ID:</strong> #{{id}}<br />
-          <strong>Emitido:</strong> {{generatedAt}}
+          <strong>ID:</strong>
+          #{{id}}<br />
+          <strong>Emitido:</strong>
+          {{generatedAt}}
         </div>
       </header>
 
@@ -151,9 +157,10 @@
         <h2 class="section-title">Datos principales</h2>
         <div class="info-grid">
           <div><span class="label">Paciente:</span> {{patient.name}}</div>
-          <div><span class="label">Profesional:</span> {{professional.name}}</div>
-          <div><span class="label">Categoría:</span> {{professional.category}}</div>
-          <div><span class="label">Estado:</span> {{status}}</div>
+          <div><span class="label">Profesional:</span>
+            {{professional.name}}</div>
+          <div><span class="label">Categoría:</span>
+            {{professional.category}}</div>
         </div>
       </section>
 
@@ -199,7 +206,11 @@
           </div>
           <div class="signature-box">
             {{#if professional.signature}}
-              <img src="{{professional.signature}}" alt="Firma" class="signature-image" />
+              <img
+                src="{{professional.signature}}"
+                alt="Firma"
+                class="signature-image"
+              />
             {{else}}
               <div class="signature-line"></div>
             {{/if}}
@@ -209,7 +220,8 @@
       {{/if}}
 
       <footer>
-        Documento generado por AutoMed. Profesional: {{professional.name}}.
+        Documento generado por AutoMed. Profesional:
+        {{professional.name}}.
       </footer>
     </main>
   </body>

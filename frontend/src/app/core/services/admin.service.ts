@@ -18,6 +18,16 @@ export interface AdminPatient {
   createdAt: string;
 }
 
+export interface AdminPatientPayload {
+  dni: string;
+  password: string;
+  fullName: string;
+  email?: string;
+  phone?: string;
+  birthDate?: string;
+  sex?: string;
+}
+
 export interface AdminCatalogItem {
   categoryKey: AdminCatalogCategory;
   category: string;
@@ -65,6 +75,26 @@ export class AdminService {
 
   getPatients(): Observable<AdminPatient[]> {
     return this.api.get<AdminPatient[]>(`${this.endpoint}/patients`);
+  }
+
+  createPatient(payload: AdminPatientPayload): Observable<AdminPatient> {
+    return this.api.post<AdminPatient>(`${this.endpoint}/patients`, payload);
+  }
+
+  updatePatientStatus(
+    userId: number,
+    status: "active" | "inactive",
+  ): Observable<{ userId: number; status: string }> {
+    return this.api.patch<{ userId: number; status: string }>(
+      `${this.endpoint}/patients/${userId}/status`,
+      { status },
+    );
+  }
+
+  deletePatient(userId: number): Observable<{ message: string }> {
+    return this.api.delete<{ message: string }>(
+      `${this.endpoint}/patients/${userId}`,
+    );
   }
 
   getCatalog(): Observable<AdminCatalogItem[]> {

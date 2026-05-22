@@ -29,7 +29,7 @@ export class RegisterComponent {
     if (this.password !== this.confirmPassword) return;
 
     this.authService
-      .register(this.dni, this.password, this.fullName)
+      .register(this.dni, this.password, this.fullName, this.email)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
