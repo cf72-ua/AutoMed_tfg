@@ -34,7 +34,7 @@ CREATE TABLE users (
 
 CREATE TABLE roles (
   id BIGINT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(50) NOT NULL, -- PACIENTE | PROFESIONAL | ADMIN
+  name VARCHAR(50) NOT NULL, -- PACIENTE | DOCTOR | ADMIN
   PRIMARY KEY (id),
   UNIQUE KEY uq_roles_name (name)
 ) ENGINE=InnoDB;
@@ -53,7 +53,7 @@ CREATE TABLE user_roles (
 ) ENGINE=InnoDB;
 
 /* -------------------------
-   2) Perfiles: paciente / profesional
+   2) Perfiles: paciente / doctor
    ------------------------- */
 
 CREATE TABLE patient_profiles (
@@ -72,7 +72,7 @@ CREATE TABLE patient_profiles (
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
-/* ---- Categorías y especialidades (profesional) ---- */
+/* ---- Categorías y especialidades (doctor) ---- */
 
 CREATE TABLE professional_categories (
   id BIGINT NOT NULL AUTO_INCREMENT,
@@ -322,7 +322,7 @@ CREATE TABLE signatures (
 
 CREATE TABLE medical_reports (
   id BIGINT NOT NULL AUTO_INCREMENT,
-  consultation_id BIGINT NOT NULL,
+  consultation_id BIGINT NULL,
   patient_id BIGINT NOT NULL,
   professional_id BIGINT NOT NULL,
   title VARCHAR(255) NOT NULL,
@@ -337,7 +337,7 @@ CREATE TABLE medical_reports (
   KEY idx_report_prof (professional_id),
   CONSTRAINT fk_report_consult
     FOREIGN KEY (consultation_id) REFERENCES consultations(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT fk_report_patient
     FOREIGN KEY (patient_id) REFERENCES patient_profiles(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
@@ -445,6 +445,7 @@ CREATE TABLE medication_alarms (
   dose VARCHAR(100) NOT NULL,
   frequency VARCHAR(50) NOT NULL DEFAULT 'daily',
   time TIME NOT NULL,
+  end_date DATE NOT NULL,
   notes TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

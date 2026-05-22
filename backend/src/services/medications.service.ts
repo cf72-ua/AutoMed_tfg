@@ -2,14 +2,15 @@
  * Servicio de Alarmas de Medicación
  */
 
-import { getDatabase } from '../db/connection';
+import { getDatabase } from "../db/connection";
 
 export interface CreateMedicationAlarmDto {
   patientId: number;
   medicationName: string;
   dose: string;
-  frequency: string; // "daily", "twice_daily", "weekly", etc
-  time: string; // HH:mm
+  frequency: string;
+  time: string;
+  endDate: string;
   notes?: string;
 }
 
@@ -20,29 +21,45 @@ export interface MedicationAlarmResponse {
   dose: string;
   frequency: string;
   time: string;
+  endDate: string;
   notes?: string;
   createdAt: Date;
 }
 
 export class MedicationsService {
+  private readonly medicationAlarmSelect = `
+    SELECT
+      id,
+      patient_id as patientId,
+      medication_name as medicationName,
+      dose,
+      frequency,
+      time,
+      DATE_FORMAT(end_date, '%Y-%m-%d') as endDate,
+      notes,
+      created_at as createdAt
+    FROM medication_alarms
+  `;
+
   /**
    * Obtener todas las alarmas de medicación de un paciente
    */
-  async getMedicationAlarmsByPatient(patientId: number): Promise<MedicationAlarmResponse[]> {
+  async getMedicationAlarmsByPatient(
+    patientId: number,
+  ): Promise<MedicationAlarmResponse[]> {
     const db = getDatabase();
-    
+
     try {
       const [alarms]: any = await db.query(
-        `SELECT id, patient_id as patientId, medication_name as medicationName, dose, frequency, time, notes, created_at as createdAt 
-         FROM medication_alarms 
+        `${this.medicationAlarmSelect}
          WHERE patient_id = ? 
          ORDER BY time ASC`,
-        [patientId]
+        [patientId],
       );
 
       return alarms;
     } catch (error) {
-      console.error('Error getting medication alarms:', error);
+      console.error("Error getting medication alarms:", error);
       throw error;
     }
   }
@@ -50,36 +67,38 @@ export class MedicationsService {
   /**
    * Crear una nueva alarma de medicación
    */
-  async createMedicationAlarm(dto: CreateMedicationAlarmDto): Promise<MedicationAlarmResponse> {
+  async createMedicationAlarm(
+    dto: CreateMedicationAlarmDto,
+  ): Promise<MedicationAlarmResponse> {
     const db = getDatabase();
-    
+
     try {
       const [result]: any = await db.query(
-        `INSERT INTO medication_alarms (patient_id, medication_name, dose, frequency, time, notes) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO medication_alarms (patient_id, medication_name, dose, frequency, time, end_date, notes) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.patientId,
           dto.medicationName,
           dto.dose,
           dto.frequency,
           dto.time,
-          dto.notes || null
-        ]
+          dto.endDate,
+          dto.notes || null,
+        ],
       );
 
       const alarmId = result.insertId;
-      
+
       // Obtener y retornar la alarma creada
       const [alarms]: any = await db.query(
-        `SELECT id, patient_id as patientId, medication_name as medicationName, dose, frequency, time, notes, created_at as createdAt 
-         FROM medication_alarms 
+        `${this.medicationAlarmSelect}
          WHERE id = ?`,
-        [alarmId]
+        [alarmId],
       );
 
       return alarms[0];
     } catch (error) {
-      console.error('Error creating medication alarm:', error);
+      console.error("Error creating medication alarm:", error);
       throw error;
     }
   }
@@ -87,56 +106,62 @@ export class MedicationsService {
   /**
    * Actualizar una alarma de medicación
    */
-  async updateMedicationAlarm(alarmId: number, dto: Partial<CreateMedicationAlarmDto>): Promise<MedicationAlarmResponse> {
+  async updateMedicationAlarm(
+    alarmId: number,
+    dto: Partial<CreateMedicationAlarmDto>,
+  ): Promise<MedicationAlarmResponse> {
     const db = getDatabase();
-    
+
     try {
       const updates: string[] = [];
       const values: any[] = [];
 
       if (dto.medicationName) {
-        updates.push('medication_name = ?');
+        updates.push("medication_name = ?");
         values.push(dto.medicationName);
       }
       if (dto.dose) {
-        updates.push('dose = ?');
+        updates.push("dose = ?");
         values.push(dto.dose);
       }
       if (dto.frequency) {
-        updates.push('frequency = ?');
+        updates.push("frequency = ?");
         values.push(dto.frequency);
       }
       if (dto.time) {
-        updates.push('time = ?');
+        updates.push("time = ?");
         values.push(dto.time);
       }
+      if (dto.endDate) {
+        updates.push("end_date = ?");
+        values.push(dto.endDate);
+      }
       if (dto.notes !== undefined) {
-        updates.push('notes = ?');
+        updates.push("notes = ?");
         values.push(dto.notes);
       }
 
       if (updates.length === 0) {
-        throw new Error('No fields to update');
+        throw new Error("No fields to update");
       }
 
       values.push(alarmId);
 
       await db.query(
-        `UPDATE medication_alarms SET ${updates.join(', ')} WHERE id = ?`,
-        values
+        `UPDATE medication_alarms SET ${updates.join(", ")} WHERE id = ?`,
+        values,
       );
 
       // Obtener y retornar la alarma actualizada
       const [alarms]: any = await db.query(
-        `SELECT id, patient_id as patientId, medication_name as medicationName, dose, frequency, time, notes, created_at as createdAt 
-         FROM medication_alarms 
+        `${this.medicationAlarmSelect}
          WHERE id = ?`,
-        [alarmId]
+        [alarmId],
       );
 
       return alarms[0];
     } catch (error) {
-      console.error('Error updating medication alarm:', error);
+      console.error("Error updating medication alarm:", error);
       throw error;
     }
   }
@@ -146,14 +171,11 @@ export class MedicationsService {
    */
   async deleteMedicationAlarm(alarmId: number): Promise<void> {
     const db = getDatabase();
-    
+
     try {
-      await db.query(
-        'DELETE FROM medication_alarms WHERE id = ?',
-        [alarmId]
-      );
+      await db.query("DELETE FROM medication_alarms WHERE id = ?", [alarmId]);
     } catch (error) {
-      console.error('Error deleting medication alarm:', error);
+      console.error("Error deleting medication alarm:", error);
       throw error;
     }
   }

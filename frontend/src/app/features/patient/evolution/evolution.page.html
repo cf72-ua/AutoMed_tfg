@@ -1,5 +1,5 @@
 <div class="page">
-  <!-- HERO -->
+  
   <section class="hero">
     <div class="hero-left">
       <h1>Mi evolución de Salud</h1>
@@ -8,69 +8,115 @@
 
     <div class="hero-right">
       <div class="hero-ill">
-        <!-- Placeholder ilustración -->
+        
       </div>
     </div>
   </section>
 
-  <!-- CONTENT -->
+  
   <section class="content">
-    <!-- LEFT: cards -->
-    <div class="cards">
+    
+    <div class="cards-section">
       <h2 class="section-title">Evolución de Hábitos</h2>
 
       <div class="grid">
-        <article class="card" *ngFor="let c of cards()">
-          <div class="card-top">
-            <div class="card-icon">
-              <span *ngIf="c.key==='sleep'">🌙</span>
-              <span *ngIf="c.key==='exercise'">🏃</span>
-              <span *ngIf="c.key==='nutrition'">🍎</span>
-              <span *ngIf="c.key==='stress'">🧠</span>
-            </div>
-            <div class="card-title">{{ c.title }}</div>
-
-            <div class="meta">
-              <span class="unit">{{ c.unit }}</span>
-              <span class="chip" *ngIf="c.averageLabel">{{ c.averageLabel }}</span>
-              <span class="chip" *ngIf="c.totalLabel">{{ c.totalLabel }}</span>
+        <article class="card" *ngFor="let c of cards(); trackBy: trackByIdx">
+          <div class="card-header">
+            <span class="emoji">{{ c.emoji }}</span>
+            <div class="card-title">
+              <h4>{{ c.title }}</h4>
+              <p>{{ c.subtitle }}</p>
             </div>
           </div>
 
-          <!-- Mini chart -->
-          <div class="chart">
-            <svg viewBox="0 0 280 110" preserveAspectRatio="none">
-              <path class="area" [attr.d]="pointsToPath(c.points) + ' L 270 100 L 10 100 Z'"></path>
-              <path class="line" [attr.d]="pointsToPath(c.points)"></path>
-              <g *ngFor="let p of c.points; let i = index">
-                <circle
-                  class="dot"
-                  [attr.cx]="10 + (260/(c.points.length-1))*i"
-                  [attr.cy]="calculateCy(c.points, i)"
-                  r="3"
-                ></circle>
-              </g>
-            </svg>
+          
+          <svg class="card-chart" viewBox="0 0 280 140">
+            <g class="chart-grid">
+              <ng-container *ngFor="let tick of yAxisTicks(c.points)">
+                <line
+                  x1="34"
+                  [attr.y1]="tick.y"
+                  x2="270"
+                  [attr.y2]="tick.y"
+                ></line>
+                <text x="28" [attr.y]="tick.y + 4" text-anchor="end">
+                  {{ tick.label }}
+                </text>
+              </ng-container>
+            </g>
 
-            <div class="months">
-              <span *ngFor="let m of months">{{ m }}</span>
-            </div>
+            <g class="chart-axis">
+              <line x1="34" y1="14" x2="34" y2="102"></line>
+              <line x1="34" y1="102" x2="270" y2="102"></line>
+              <text x="10" y="58" class="axis-label-y" transform="rotate(-90 10 58)">
+                {{ c.unit }}
+              </text>
+              <text x="152" y="136" class="axis-label-x">Fecha</text>
+            </g>
+
+            
+            <polyline
+              *ngIf="c.hasData"
+              [attr.points]="c.path"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              vector-effect="non-scaling-stroke"
+            ></polyline>
+
+            
+            <circle
+              *ngFor="let p of c.hasData ? c.points : []; let i = index; trackBy: trackByIdx"
+              [attr.cx]="calculateCx(c.points, i)"
+              [attr.cy]="calculateCy(c.points, i)"
+              r="3"
+              fill="currentColor"
+            ></circle>
+
+            <g class="chart-x-labels" *ngIf="c.hasData">
+              <ng-container *ngFor="let label of c.xLabels; let i = index; trackBy: trackByIdx">
+                <text
+                  *ngIf="i === 0 || i === c.xLabels.length - 1 || c.xLabels.length <= 4"
+                  [attr.x]="calculateCx(c.points, i)"
+                  y="119"
+                  text-anchor="middle"
+                >
+                  {{ label }}
+                </text>
+              </ng-container>
+            </g>
+          </svg>
+
+          <div class="no-data" *ngIf="!c.hasData">
+            Sin datos registrados
           </div>
 
-          <div class="trend" *ngIf="c.trendLabel">
-            <span class="trend-arrow">↓</span>
-            <span class="trend-text">Tendencia: <b>{{ c.trendLabel }}</b></span>
+          <div class="card-stats">
+            <div class="stat">
+              <span class="label">Promedio</span>
+              <span class="value">{{ c.avg }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Máximo</span>
+              <span class="value">{{ c.max }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Mínimo</span>
+              <span class="value">{{ c.min }}</span>
+            </div>
           </div>
         </article>
       </div>
     </div>
 
-    <!-- RIGHT: timeline -->
+    
     <aside class="timeline">
       <div class="timeline-title">Línea Temporal</div>
 
       <div class="tl">
-        <div class="tl-item" *ngFor="let t of timeline()">
+        <div class="tl-item" *ngFor="let t of paginatedTimeline(); trackBy: trackByIdx">
           <div class="dot"></div>
 
           <div class="tl-body">
@@ -84,10 +130,73 @@
               <span class="text">{{ t.detail }}</span>
             </div>
 
-            <span [class]="badgeClass(t.badge.tone)" *ngIf="t.badge">{{ t.badge.text }}</span>
+            <span [class]="badgeClass(t.badge.tone || 'gray')" *ngIf="t.badge"
+              >{{ t.badge.text }}</span
+            >
+
+            
+            <button
+              class="btn-edit-notes"
+              *ngIf="t.kind === 'CITA'"
+              (click)="openNotesModal(+t.id, t.notes || '')"
+            >
+              📝 {{ t.notes ? 'Ver' : 'Agregar' }} Notas
+            </button>
           </div>
         </div>
       </div>
+
+      <div class="timeline-pagination" *ngIf="timeline().length > timelinePageSize">
+        <button
+          type="button"
+          (click)="previousTimelinePage()"
+          [disabled]="timelinePage() === 0"
+        >
+          Anterior
+        </button>
+        <span>{{ timelineRangeLabel() }}</span>
+        <button
+          type="button"
+          (click)="nextTimelinePage()"
+          [disabled]="timelinePage() >= totalTimelinePages() - 1"
+        >
+          Siguiente
+        </button>
+      </div>
     </aside>
   </section>
+
+  
+  <div
+    class="modal-overlay"
+    *ngIf="showNotesModal()"
+    (click)="closeNotesModal()"
+  ></div>
+  <div class="modal" *ngIf="showNotesModal()">
+    <div class="modal-header">
+      <h3>Notas de Consulta</h3>
+      <button class="close-btn" type="button" (click)="closeNotesModal()">
+        ✕
+      </button>
+    </div>
+    <div class="modal-body">
+      <textarea
+        placeholder="Agrega notas sobre esta cita..."
+        [(ngModel)]="editingNotes"
+        class="notes-input"
+      ></textarea>
+    </div>
+    <div class="modal-footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="closeNotesModal()"
+      >
+        Cancelar
+      </button>
+      <button class="btn btn-primary" type="button" (click)="saveNotes()">
+        Guardar Notas
+      </button>
+    </div>
+  </div>
 </div>

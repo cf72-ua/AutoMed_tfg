@@ -1,5 +1,5 @@
 <div class="page">
-  <!-- HERO -->
+  
   <section class="hero">
     <div class="hero-left">
       <h1>Registro de Hábitos</h1>
@@ -16,11 +16,11 @@
   </section>
 
   <section class="content">
-    <!-- LEFT -->
+    
     <div class="left">
       <h2 class="section-title">Hábitos esta semana</h2>
 
-      <!-- Tabs -->
+      
       <div class="tabs">
         <button
           class="tab"
@@ -59,7 +59,7 @@
         </button>
       </div>
 
-      <!-- Week bars -->
+      
       <div class="week-card">
         <div class="week-head">
           <div class="week-day" *ngFor="let d of week(); let i = index">
@@ -87,9 +87,9 @@
         </div>
       </div>
 
-      <!-- bottom mini charts -->
+      
       <div class="bottom">
-        <!-- Week Navigation Header -->
+        
         <div class="week-nav">
           <button class="nav-btn" type="button" (click)="previousWeek()">
             ← Anterior
@@ -99,7 +99,7 @@
             Siguiente →
           </button>
 
-          <!-- opcional -->
+          
           <button class="nav-btn" type="button" (click)="goToCurrentWeek()">
             Semana actual
           </button>
@@ -118,9 +118,28 @@
             </div>
             <svg
               *ngIf="hasSeriesData(sleepSeries())"
-              viewBox="0 0 300 100"
+              [attr.viewBox]="chartViewBox()"
               preserveAspectRatio="none"
             >
+              <line
+                class="axis-y"
+                [attr.x1]="getYAxisAxisX()"
+                [attr.x2]="getYAxisAxisX()"
+                y1="10"
+                y2="126"
+              ></line>
+              <ng-container *ngFor="let tick of getYAxisTicks(sleepSeries())">
+                <line
+                  class="grid-y"
+                  [attr.x1]="getYAxisGridLineX1()"
+                  [attr.x2]="getYAxisGridLineX2()"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                ></line>
+                <text class="axis-label" x="6" [attr.y]="tick.y + 4">
+                  {{ tick.label }}
+                </text>
+              </ng-container>
               <path
                 *ngIf="countDataPoints(sleepSeries()) >= 2"
                 class="line orange"
@@ -166,9 +185,28 @@
             </div>
             <svg
               *ngIf="hasSeriesData(exerciseSeries())"
-              viewBox="0 0 300 100"
+              [attr.viewBox]="chartViewBox()"
               preserveAspectRatio="none"
             >
+              <line
+                class="axis-y"
+                [attr.x1]="getYAxisAxisX()"
+                [attr.x2]="getYAxisAxisX()"
+                y1="10"
+                y2="126"
+              ></line>
+              <ng-container *ngFor="let tick of getYAxisTicks(exerciseSeries())">
+                <line
+                  class="grid-y"
+                  [attr.x1]="getYAxisGridLineX1()"
+                  [attr.x2]="getYAxisGridLineX2()"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                ></line>
+                <text class="axis-label" x="6" [attr.y]="tick.y + 4">
+                  {{ tick.label }}
+                </text>
+              </ng-container>
               <path
                 *ngIf="countDataPoints(exerciseSeries()) >= 2"
                 class="line blue"
@@ -211,16 +249,35 @@
             </div>
             <svg
               *ngIf="hasSeriesData(nutritionSeries())"
-              viewBox="0 0 300 100"
+              [attr.viewBox]="chartViewBox()"
               preserveAspectRatio="none"
             >
+              <line
+                class="axis-y"
+                [attr.x1]="getYAxisAxisX()"
+                [attr.x2]="getYAxisAxisX()"
+                y1="10"
+                y2="126"
+              ></line>
+              <ng-container *ngFor="let tick of getYAxisTicks(nutritionSeries(), true)">
+                <line
+                  class="grid-y"
+                  [attr.x1]="getYAxisGridLineX1()"
+                  [attr.x2]="getYAxisGridLineX2()"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                ></line>
+                <text class="axis-label" x="6" [attr.y]="tick.y + 4">
+                  {{ tick.label }}
+                </text>
+              </ng-container>
               <path
                 *ngIf="countDataPoints(nutritionSeries()) >= 2"
                 class="line green"
-                [attr.d]="linePath(nutritionSeries())"
+                [attr.d]="linePath(nutritionSeries(), true)"
               ></path>
               <ng-container
-                *ngFor="let point of getChartPoints(nutritionSeries())"
+                *ngFor="let point of getChartPoints(nutritionSeries(), true)"
               >
                 <circle
                   *ngIf="point.value > 0"
@@ -260,16 +317,35 @@
             </div>
             <svg
               *ngIf="hasSeriesData(stressSeries())"
-              viewBox="0 0 300 100"
+              [attr.viewBox]="chartViewBox()"
               preserveAspectRatio="none"
             >
+              <line
+                class="axis-y"
+                [attr.x1]="getYAxisAxisX()"
+                [attr.x2]="getYAxisAxisX()"
+                y1="10"
+                y2="126"
+              ></line>
+              <ng-container *ngFor="let tick of getYAxisTicks(stressSeries(), true)">
+                <line
+                  class="grid-y"
+                  [attr.x1]="getYAxisGridLineX1()"
+                  [attr.x2]="getYAxisGridLineX2()"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                ></line>
+                <text class="axis-label" x="6" [attr.y]="tick.y + 4">
+                  {{ tick.label }}
+                </text>
+              </ng-container>
               <path
                 *ngIf="countDataPoints(stressSeries()) >= 2"
                 class="line red"
-                [attr.d]="linePath(stressSeries())"
+                [attr.d]="linePath(stressSeries(), true)"
               ></path>
               <ng-container
-                *ngFor="let point of getChartPoints(stressSeries())"
+                *ngFor="let point of getChartPoints(stressSeries(), true)"
               >
                 <circle
                   *ngIf="point.value > 0"
@@ -294,7 +370,7 @@
       </div>
     </div>
 
-    <!-- RIGHT -->
+    
     <aside class="right">
       <div class="day-card">
         <div class="day-title">{{ selectedDateLabel() }}</div>
@@ -355,7 +431,7 @@
     </aside>
   </section>
 
-  <!-- MODAL -->
+  
   <div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <h2>Registrar Hábito</h2>
@@ -372,20 +448,28 @@
         </div>
 
         <div class="form-group">
-          <label>Valor</label>
+          <label *ngIf="modalType()!=='NUTRITION'">Valor</label>
+          <label *ngIf="modalType()==='NUTRITION'">Qué has comido hoy</label>
 
-          <!-- ✅ FIX signals + ngModel -->
           <input
+            *ngIf="modalType()!=='NUTRITION'"
             type="number"
             [ngModel]="modalValue()"
             (ngModelChange)="modalValue.set($event)"
           />
 
+          <textarea
+            *ngIf="modalType()==='NUTRITION'"
+            [ngModel]="modalNotes()"
+            (ngModelChange)="modalNotes.set($event)"
+            placeholder="Ej.: desayuno tostada integral con tomate y café; comida lentejas con ensalada; cena pescado con verduras; fruta y agua durante el día"
+          ></textarea>
+
           <small>
             <span *ngIf="modalType()==='SLEEP'">Horas de sueño</span>
             <span *ngIf="modalType()==='EXERCISE'">Minutos de ejercicio</span>
             <span *ngIf="modalType()==='NUTRITION'"
-              >1-3 (Mala, Normal, Balanceada)</span
+              >La IA asignará un nutriscore de 1-3 y se guardará ese valor</span
             >
             <span *ngIf="modalType()==='STRESS'"
               >1-3 (Bajo, Moderado, Alto)</span
@@ -402,7 +486,7 @@
           />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" *ngIf="modalType()!=='NUTRITION'">
           <label>Notas (opcional)</label>
           <textarea
             [ngModel]="modalNotes()"
@@ -415,8 +499,90 @@
         <button class="btn btn-gray" type="button" (click)="closeModal()">
           Cancelar
         </button>
-        <button class="btn btn-green" type="button" (click)="saveHabit()">
-          Guardar
+        <button
+          class="btn btn-green"
+          type="button"
+          (click)="saveHabit()"
+          [disabled]="isSavingHabit()"
+        >
+          {{ isSavingHabit() && modalType()==='NUTRITION' ? 'Analizando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div
+    class="modal-overlay"
+    *ngIf="showRecommendationsModal()"
+    (click)="closeRecommendationsModal()"
+  >
+    <div class="modal md" (click)="$event.stopPropagation()">
+      <h2>Recomendaciones Personalizadas</h2>
+
+      <div class="recommendations-content" *ngIf="recommendations()">
+        
+        <div
+          class="risk-badge"
+          [class.low]="recommendations()!.riskLevel === 'BAJO'"
+          [class.medium]="recommendations()!.riskLevel === 'MEDIO'"
+          [class.high]="recommendations()!.riskLevel === 'ALTO'"
+        >
+          <span class="risk-icon">
+            {{ recommendations()!.riskLevel === 'BAJO' ? '✅' :
+            recommendations()!.riskLevel === 'MEDIO' ? '⚠️' : '🚨' }}
+          </span>
+          <div class="risk-info">
+            <div class="risk-title">
+              Factor de Riesgo:
+              <strong>{{ recommendations()!.riskLevel }}</strong>
+            </div>
+            <div class="risk-score">
+              Evaluación: {{ recommendations()!.riskScore }}/100
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="summary-box">
+          <p>{{ recommendations()!.summary }}</p>
+        </div>
+
+        
+        <div class="recommendations-list">
+          <h3>Recomendaciones:</h3>
+          <ul>
+            <li *ngFor="let rec of recommendations()!.recommendations">
+              {{ rec }}
+            </li>
+          </ul>
+        </div>
+
+        
+        <div class="timestamp">
+          Generado: {{ recommendations()!.timestamp | date:'short' }}
+        </div>
+      </div>
+
+      <div
+        class="recommendations-loading"
+        *ngIf="isGeneratingRecommendations()"
+      >
+        <div class="spinner"></div>
+        <p>Generando recomendaciones personalizadas...</p>
+      </div>
+
+      <div class="recommendations-error" *ngIf="recommendationsError()">
+        <p>{{ recommendationsError() }}</p>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          class="btn btn-green wide"
+          type="button"
+          (click)="closeRecommendationsModal()"
+        >
+          Entendido
         </button>
       </div>
     </div>

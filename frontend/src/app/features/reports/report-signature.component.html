@@ -1,0 +1,115 @@
+    <div class="signature-container">
+      <div class="signature-header">
+        <div>
+          <h2>Firmar y Generar PDF</h2>
+          <p>Revisa el informe, selecciona tu firma y confirma la generación del documento final.</p>
+        </div>
+        <button class="btn btn-secondary" routerLink="../" title="Volver">
+          ← Volver
+        </button>
+      </div>
+
+      <app-loading-spinner
+        *ngIf="isLoading"
+        [message]="'Cargando datos...'"
+      ></app-loading-spinner>
+
+      <div *ngIf="!isLoading && report" class="signature-content">
+        
+        <div class="report-info-box">
+          <div class="report-title">
+            <span class="eyebrow">Informe pendiente de firma</span>
+            <h3>{{ report.title }}</h3>
+          </div>
+          <div class="report-meta">
+            <div>
+              <span class="meta-label">Tipo</span>
+              <strong>{{ report.reportTypeName }}</strong>
+            </div>
+            <div>
+              <span class="meta-label">Estado</span>
+              <span class="badge bg-warning">{{ report.status }}</span>
+            </div>
+            <div>
+              <span class="meta-label">Creado</span>
+              <strong>{{ report.createdAt | date: "short" }}</strong>
+            </div>
+          </div>
+        </div>
+
+        
+        <section class="signature-selection">
+          <div class="section-heading">
+            <h4>Selecciona tu firma digital</h4>
+          </div>
+
+          <div *ngIf="signatures.length > 0" class="signatures-list">
+            <button
+              type="button"
+              *ngFor="let sig of signatures"
+              class="signature-card"
+              [class.active]="selectedSignatureId === sig.id"
+              (click)="selectSignature(sig.id)"
+            >
+              <div class="signature-preview">
+                <img [src]="sig.imageUrl" [alt]="sig.namePrinted" />
+              </div>
+              <div class="signature-info">
+                <p>
+                  <strong>{{ sig.namePrinted }}</strong>
+                </p>
+                <p *ngIf="sig.isActive" class="active-badge">✓ Activa</p>
+              </div>
+            </button>
+          </div>
+
+          <div *ngIf="signatures.length === 0" class="alert alert-warning">
+            No hay firmas registradas.
+            <a routerLink="/signatures/upload" class="link"
+              >Sube una nueva firma</a
+            >
+          </div>
+        </section>
+
+        
+        <div class="confirmation-box">
+          <h4>Confirmación de Firma</h4>
+          <p>
+            <strong>⚠️ Atención:</strong> Al firmar este informe, se generará un
+            PDF inmutable que quedará registrado en la base de datos. Esta
+            acción no se puede deshacer.
+          </p>
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="confirmSign" />
+            Confirmo que deseo firmar este informe con la firma seleccionada
+          </label>
+        </div>
+
+        
+        <div class="actions">
+          <button
+            class="btn btn-success"
+            [disabled]="!selectedSignatureId || !confirmSign || isSigning"
+            (click)="onSign()"
+          >
+            {{ isSigning ? "Generando PDF..." : "✓ Firmar y Generar PDF" }}
+          </button>
+          <button class="btn btn-cancel" routerLink="../">Cancelar</button>
+        </div>
+      </div>
+
+      
+      <div
+        *ngIf="signResult"
+        [ngClass]="
+          signResult.success ? 'alert alert-success' : 'alert alert-danger'
+        "
+      >
+        <h4>{{ signResult.message }}</h4>
+        <p *ngIf="signResult.pdfUrl">
+          <a [href]="signResult.pdfUrl" target="_blank" class="link">
+            Descargar PDF generado
+          </a>
+        </p>
+      </div>
+    </div>

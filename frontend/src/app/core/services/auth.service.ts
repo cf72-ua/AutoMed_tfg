@@ -2,28 +2,42 @@
  * Servicio de Autenticación para Angular
  */
 
-import { Injectable, signal, Signal } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { Injectable, signal, Signal } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
+import { tap } from "rxjs/operators";
+import { ApiService } from "./api.service";
 
-type Role = 'PACIENTE' | 'PROFESIONAL' | 'ADMIN' | null;
+type Role = "PACIENTE" | "DOCTOR" | "ADMIN" | null;
+
+export interface CurrentUser {
+  id: number;
+  dni: string;
+  email?: string | null;
+  full_name?: string;
+  fullName?: string;
+  phone?: string | null;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 interface AuthToken {
   userId: number;
   dni: string;
-  role: Role;
+  role?: Role;
+  roles?: Role[];
   iat?: number;
   exp?: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class AuthService {
-  private currentUser$ = new BehaviorSubject<any>(null);
+  private currentUser$ = new BehaviorSubject<CurrentUser | null>(
+    this.getStoredUser(),
+  );
 
-  // Signals
   private authenticatedSignal = signal<boolean>(this.hasToken());
   private currentRoleSignal = signal<Role>(this.extractRoleFromToken());
 
@@ -35,33 +49,37 @@ export class AuthService {
    * Registrar nuevo usuario por DNI
    */
   register(dni: string, password: string, fullName: string): Observable<any> {
-    return this.apiService.post('/auth/register', {
-      dni,
-      password,
-      fullName
-    }).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          this.setAuthToken(response.token, response.user);
-        }
+    return this.apiService
+      .post("/auth/register", {
+        dni,
+        password,
+        fullName,
       })
-    );
+      .pipe(
+        tap((response: any) => {
+          if (response.token) {
+            this.setAuthToken(response.token, response.user);
+          }
+        }),
+      );
   }
 
   /**
    * Login por DNI
    */
   login(dni: string, password: string): Observable<any> {
-    return this.apiService.post('/auth/login', {
-      dni,
-      password
-    }).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          this.setAuthToken(response.token, response.user);
-        }
+    return this.apiService
+      .post("/auth/login", {
+        dni,
+        password,
       })
-    );
+      .pipe(
+        tap((response: any) => {
+          if (response.token) {
+            this.setAuthToken(response.token, response.user);
+          }
+        }),
+      );
   }
 
   /**
@@ -69,6 +87,7 @@ export class AuthService {
    */
   logout(): void {
     this.apiService.clearToken();
+    localStorage.removeItem("auth_user");
     this.currentUser$.next(null);
     this.authenticatedSignal.set(false);
     this.currentRoleSignal.set(null);
@@ -79,10 +98,11 @@ export class AuthService {
    */
   private setAuthToken(token: string, user: any): void {
     this.apiService.setToken(token);
+    localStorage.setItem("auth_user", JSON.stringify(user));
     this.currentUser$.next(user);
     this.authenticatedSignal.set(true);
+
     
-    // Extraer rol del token decodificado
     const role = this.extractRoleFromToken();
     this.currentRoleSignal.set(role);
   }
@@ -104,7 +124,7 @@ export class AuthService {
   /**
    * Get current user
    */
-  getCurrentUser(): Observable<any> {
+  getCurrentUser(): Observable<CurrentUser | null> {
     return this.currentUser$.asObservable();
   }
 
@@ -128,26 +148,24 @@ export class AuthService {
   private extractRoleFromToken(): Role {
     const token = this.getToken();
     if (!token) return null;
-    
+
     try {
-      // Decodificar JWT (sin verificar firma en cliente)
-      const parts = token.split('.');
+      const parts = token.split(".");
       if (parts.length !== 3) {
-        console.warn('Invalid token format');
+        console.warn("Invalid token format");
         return null;
       }
-      
-      // Agregar padding si es necesario
+
       let payload = parts[1];
       const padding = 4 - (payload.length % 4);
       if (padding !== 4) {
-        payload += '='.repeat(padding);
+        payload += "=".repeat(padding);
       }
-      
+
       const decoded = JSON.parse(atob(payload)) as AuthToken;
-      return decoded.role || null;
+      return decoded.role || decoded.roles?.[0] || null;
     } catch (error) {
-      console.error('Error decoding token:', error);
+      console.error("Error decoding token:", error);
       return null;
     }
   }
@@ -158,9 +176,22 @@ export class AuthService {
   private loadCurrentUser(): void {
     const token = this.getToken();
     if (token) {
-      // El usuario se carga desde el token
       this.authenticatedSignal.set(true);
       this.currentRoleSignal.set(this.extractRoleFromToken());
+      this.currentUser$.next(this.getStoredUser());
+    }
+  }
+
+  private getStoredUser(): CurrentUser | null {
+    const rawUser = localStorage.getItem("auth_user");
+    if (!rawUser) return null;
+
+    try {
+      return JSON.parse(rawUser) as CurrentUser;
+    } catch (error) {
+      console.error("Error parsing stored user:", error);
+      localStorage.removeItem("auth_user");
+      return null;
     }
   }
 
@@ -178,12 +209,12 @@ export class AuthService {
    * Refresh token
    */
   refreshToken(): Observable<any> {
-    return this.apiService.post('/auth/refresh', {}).pipe(
+    return this.apiService.post("/auth/refresh", {}).pipe(
       tap((response: any) => {
         if (response.token) {
           this.setAuthToken(response.token, response.user);
         }
-      })
+      }),
     );
   }
 }

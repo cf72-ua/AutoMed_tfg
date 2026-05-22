@@ -1,12 +1,31 @@
 .sidebar {
   width: 280px;
-  height: calc(100vh - 78px); /* si tu navbar mide 78px */
+  flex: 0 0 280px;
+  height: calc(100vh - 78px);
   background: #eaf6ff;
   border-right: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 26px 0;
+  padding: 18px 0 26px;
   position: sticky;
-  top: 78px; /* pegado debajo del navbar */
+  top: 78px;
   overflow: hidden;
+}
+
+.collapse-btn {
+  width: 42px;
+  height: 42px;
+  margin: 0 18px 18px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(31, 71, 136, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #1f4788;
+  cursor: pointer;
+}
+
+.collapse-btn:hover {
+  background: #ffffff;
 }
 
 .menu {
@@ -20,7 +39,7 @@
   position: relative;
   display: block;
   padding: 18px 20px;
-  font-size: 26px;       /* grande como tu imagen */
+  font-size: 26px;
   font-weight: 600;
   color: #0b0b0b;
   text-decoration: none;
@@ -28,36 +47,33 @@
   line-height: 1.1;
 }
 
-/* Pastilla azul del activo, como en tu screenshot */
 .item.active::after {
   content: "";
   position: absolute;
   left: 0;
   top: 6px;
   bottom: 6px;
-  right: -90px;          /* hace que sobresalga a la derecha */
-  background: #9cbcf0;   /* azul pastel */
+  right: -90px;
+  background: #9cbcf0;
   border-radius: 999px;
   z-index: -1;
 }
 
-/* Para que el texto quede por encima del highlight */
 .item.active {
   font-weight: 800;
 }
 
-/* Hover suave */
 .item:hover {
   background: rgba(156, 188, 240, 0.18);
 }
 
-/* Responsive: en móvil mejor colapsar o convertir a drawer */
 @media (max-width: 900px) {
   .sidebar {
     width: 240px;
+    flex-basis: 240px;
   }
   .item {
-    font-size: 28px;
+    font-size: 24px;
     padding: 14px 16px;
   }
 }

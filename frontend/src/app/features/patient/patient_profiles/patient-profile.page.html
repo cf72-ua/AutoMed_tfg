@@ -1,0 +1,94 @@
+<div class="profile-page">
+  <section class="profile-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Perfil paciente</span>
+      <h1>{{ displayName() }}</h1>
+      <p>Datos personales, actividad sanitaria y accesos rápidos de seguimiento.</p>
+    </div>
+    <div class="hero-avatar" aria-hidden="true">{{ initials() }}</div>
+  </section>
+
+  <app-loading-spinner *ngIf="isLoading()" [message]="'Cargando perfil...'"></app-loading-spinner>
+
+  <div class="alert alert-info" *ngIf="!isLoading() && loadingError()">
+    {{ loadingError() }}
+  </div>
+
+  <ng-container *ngIf="!isLoading() && !loadingError()">
+    <section class="profile-panel">
+      <div class="profile-heading">
+        <span class="avatar">{{ initials() }}</span>
+        <div>
+          <h2>{{ displayName() }}</h2>
+          <p>{{ user()?.email || "Email no registrado" }}</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span>DNI</span>
+          <strong>{{ user()?.dni || tokenPayload()?.dni || "No registrado" }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Teléfono</span>
+          <strong>{{ user()?.phone || "No registrado" }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Último hábito</span>
+          <strong>{{ lastHabitLabel() }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Próxima cita</span>
+          <strong>{{ formatAppointment(nextAppointment()) }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Citas</span>
+        <strong>{{ appointments().length }}</strong>
+        <button type="button" (click)="goTo('/calendar')">Ver calendario</button>
+      </article>
+      <article class="summary-card">
+        <span>Medicación</span>
+        <strong>{{ medications().length }}</strong>
+        <button type="button" (click)="goTo('/calendar')">Ver alarmas</button>
+      </article>
+      <article class="summary-card">
+        <span>Informes firmados</span>
+        <strong>{{ signedReports() }}</strong>
+        <button type="button" (click)="goTo('/reports')">Ver informes</button>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel">
+        <div class="section-title">
+          <h3>Hábitos de salud</h3>
+          <button type="button" (click)="goTo('/habits')">Registrar</button>
+        </div>
+
+        <div class="habit-grid">
+          <article class="habit-card" *ngFor="let habit of habitSummary(); trackBy: trackByKey">
+            <span>{{ habit.label }}</span>
+            <strong>{{ habit.average }}</strong>
+            <small>{{ habit.count }} registros</small>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>Accesos rápidos</h3>
+        </div>
+
+        <div class="action-list">
+          <button type="button" (click)="goTo('/evolution')">Evolución clínica</button>
+          <button type="button" (click)="goTo('/teleconsulta')">Teleconsulta</button>
+          <button type="button" (click)="goTo('/notificaciones')">Notificaciones</button>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</div>

@@ -36,5 +36,14 @@ out/
 temp/
 tmp/
 
-funcionalidades.pdf
+# Storage
+storage/
+
+# Markdowns
+DEVELOPMENT.md
+
+EER_SCHEMA.md
 ESTRUCTURA_PROYECTO.md
+REPORTS_MODULE.md
+
+funcionalidades.pdf

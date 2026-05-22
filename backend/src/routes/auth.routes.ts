@@ -2,9 +2,9 @@
  * Controlador de Autenticación
  */
 
-import { Router, Request, Response } from 'express';
-import { AuthService } from '../services/auth.service';
-import { CreateUserDto, LoginDto } from '../models/user.dto';
+import { Router, Request, Response } from "express";
+import { AuthService } from "../services/auth.service";
+import { CreateUserDto, LoginDto } from "../models/user.dto";
 
 const authRouter = Router();
 const authService = new AuthService();
@@ -13,21 +13,26 @@ const authService = new AuthService();
  * POST /api/auth/register
  * Registrar nuevo usuario
  */
-authRouter.post('/register', async (req: Request, res: Response) => {
+authRouter.post("/register", async (req: Request, res: Response) => {
   try {
     const createUserDto: CreateUserDto = req.body;
 
     // Validar datos requeridos
-    if (!createUserDto.dni || !createUserDto.password || !createUserDto.fullName) {
-      return res.status(400).json({ 
-        error: 'DNI, contraseña y nombre completo son requeridos' 
+    if (
+      !createUserDto.dni ||
+      !createUserDto.password ||
+      !createUserDto.fullName
+    ) {
+      return res.status(400).json({
+        error: "DNI, contraseña y nombre completo son requeridos",
       });
     }
 
     const result = await authService.register(createUserDto);
     res.status(201).json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Registration failed';
+    const message =
+      error instanceof Error ? error.message : "Registration failed";
     res.status(400).json({ error: message });
   }
 });
@@ -36,21 +41,22 @@ authRouter.post('/register', async (req: Request, res: Response) => {
  * POST /api/auth/login
  * Login de usuario
  */
-authRouter.post('/login', async (req: Request, res: Response) => {
+authRouter.post("/login", async (req: Request, res: Response) => {
   try {
     const loginDto: LoginDto = req.body;
 
     // Validar datos requeridos
     if (!loginDto.dni || !loginDto.password) {
-      return res.status(400).json({ 
-        error: 'DNI y contraseña son requeridos' 
+      return res.status(400).json({
+        error: "DNI y contraseña son requeridos",
       });
     }
 
     const result = await authService.login(loginDto);
     res.status(200).json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Invalid credentials';
+    const message =
+      error instanceof Error ? error.message : "Invalid credentials";
     res.status(401).json({ error: message });
   }
 });
@@ -59,18 +65,19 @@ authRouter.post('/login', async (req: Request, res: Response) => {
  * POST /api/auth/refresh
  * Refrescar token
  */
-authRouter.post('/refresh', async (req: Request, res: Response) => {
+authRouter.post("/refresh", async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
 
     if (!token) {
-      return res.status(400).json({ error: 'Token es requerido' });
+      return res.status(400).json({ error: "Token es requerido" });
     }
 
     const result = await authService.refreshToken(token);
     res.status(200).json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Token refresh failed';
+    const message =
+      error instanceof Error ? error.message : "Token refresh failed";
     res.status(401).json({ error: message });
   }
 });
@@ -79,9 +86,9 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
  * POST /api/auth/logout
  * Logout
  */
-authRouter.post('/logout', (req: Request, res: Response) => {
+authRouter.post("/logout", (req: Request, res: Response) => {
   // En este caso, el logout es principalmente en cliente (eliminar token localStorage)
-  res.status(200).json({ message: 'Logged out successfully' });
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 export default authRouter;

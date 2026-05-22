@@ -1,0 +1,286 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 210mm;
+        height: 297mm;
+        margin: 0 auto;
+        padding: 20mm;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      header {
+        text-align: center;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+
+      header h1 {
+        color: #28a745;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+        margin-top: 10px;
+      }
+
+      .patient-section {
+        margin-bottom: 25px;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: #28a745;
+        border-left: 4px solid #28a745;
+        padding-left: 10px;
+        margin-bottom: 10px;
+        margin-top: 15px;
+      }
+
+      .patient-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        font-size: 13px;
+        margin-bottom: 15px;
+      }
+
+      .info-row {
+        display: flex;
+      }
+
+      .info-label {
+        font-weight: bold;
+        color: #555;
+        min-width: 120px;
+      }
+
+      .info-value {
+        color: #333;
+      }
+
+      .medications-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 12px;
+      }
+
+      .medications-table thead {
+        background-color: #e8f5e9;
+      }
+
+      .medications-table th {
+        border: 1px solid #28a745;
+        padding: 8px;
+        text-align: left;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .medications-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      .medications-table tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+      }
+
+      .duration-box {
+        background-color: #e8f5e9;
+        border-left: 4px solid #28a745;
+        padding: 10px;
+        margin: 15px 0;
+        font-size: 13px;
+      }
+
+      .duration-title {
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 5px;
+      }
+
+      .instructions {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 10px;
+        margin: 15px 0;
+        font-size: 12px;
+      }
+
+      .instructions-title {
+        font-weight: bold;
+        color: #856404;
+        margin-bottom: 5px;
+      }
+
+      .instructions-content {
+        color: #333;
+      }
+
+      .signature-section {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .signature-block {
+        text-align: center;
+        width: 150px;
+      }
+
+      .signature-image {
+        height: 60px;
+        margin-bottom: 5px;
+        border-bottom: 1px solid #333;
+      }
+
+      .signature-name {
+        font-size: 12px;
+        font-weight: bold;
+        margin-top: 5px;
+      }
+
+      .signature-date {
+        font-size: 11px;
+        color: #666;
+        margin-top: 3px;
+      }
+
+      .footer {
+        font-size: 10px;
+        color: #999;
+        margin-top: 30px;
+        text-align: center;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+      }
+
+      @media print {
+        body {
+          background-color: white;
+        }
+        .container {
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>{{reportType.name}}</h1>
+        <div class="header-info">
+          <span><strong>Fecha de emisión:</strong> {{generatedAt}}</span>
+          <span><strong>ID Receta:</strong> #{{id}}</span>
+        </div>
+      </header>
+
+      <section class="patient-section">
+        <div class="section-title">DATOS DEL PACIENTE</div>
+        <div class="patient-info">
+          <div class="info-row">
+            <span class="info-label">Nombre:</span>
+            <span class="info-value">{{patient.name}}</span>
+          </div>
+        </div>
+      </section>
+
+      {{#if metadata.medications}}
+        <section>
+          <div class="section-title">MEDICAMENTOS PRESCRITOS</div>
+          <table class="medications-table">
+            <thead>
+              <tr>
+                <th>Medicamento</th>
+                <th>Dosis</th>
+                <th>Frecuencia</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each metadata.medications}}
+                <tr>
+                  <td>{{this.name}}</td>
+                  <td>{{this.dose}}</td>
+                  <td>{{this.frequency}}</td>
+                  <td>{{this.notes}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </section>
+      {{/if}}
+
+      {{#if metadata.duration}}
+        <div class="duration-box">
+          <div class="duration-title">DURACIÓN DEL TRATAMIENTO</div>
+          {{metadata.duration}}
+        </div>
+      {{/if}}
+
+      {{#if body}}
+        <section>
+          <div class="section-title">INSTRUCCIONES ESPECIALES</div>
+          <div class="instructions">
+            <div class="instructions-title">Indicaciones del profesional:</div>
+            <div class="instructions-content">{{{body}}}</div>
+          </div>
+        </section>
+      {{/if}}
+
+      {{#if signedAt}}
+        <section class="signature-section">
+          <div class="signature-block">
+            {{#if professional.signature}}
+              <img
+                src="{{professional.signature}}"
+                alt="Firma"
+                class="signature-image"
+              />
+            {{else}}
+              <div class="signature-image"></div>
+            {{/if}}
+            <div class="signature-name">{{professional.signatureName}}</div>
+            <div class="signature-date">Firmado: {{signedAt}}</div>
+          </div>
+        </section>
+      {{/if}}
+
+      <footer class="footer">
+        <p>Receta médica válida. Profesional: {{professional.name}}</p>
+        <p style="margin-top: 10px; font-weight: bold;" class="text-danger">
+          ⚠ No automedicar. Seguir las indicaciones del profesional sanitario.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

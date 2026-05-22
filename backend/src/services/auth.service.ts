@@ -3,17 +3,23 @@
  * Autenticación por DNI/NIE en lugar de email
  */
 
-import { CreateUserDto, UserResponse, LoginDto, LoginResponse } from '@models/user.dto';
-import { UserRole } from '../types/index.d';
-import { getDatabase } from '../db/connection';
+import {
+  CreateUserDto,
+  UserResponse,
+  LoginDto,
+  LoginResponse,
+} from "@models/user.dto";
+import { UserRole } from "../types/index.d";
+import { getDatabase } from "../db/connection";
 // @ts-ignore
-import bcryptjs from 'bcryptjs';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import bcryptjs from "bcryptjs";
+import jwt, { SignOptions } from "jsonwebtoken";
 
-type Role = 'PACIENTE' | 'PROFESIONAL' | 'ADMIN' | null;
+type Role = "PACIENTE" | "DOCTOR" | "ADMIN" | null;
 
 export class AuthService {
-  private jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+  private jwtSecret =
+    process.env.JWT_SECRET || "your_jwt_secret_key_change_in_production";
 
   /**
    * Registrar nuevo usuario por DNI
@@ -25,12 +31,12 @@ export class AuthService {
     try {
       // Validar que el DNI no exista
       const [existingUsers]: any = await db.query(
-        'SELECT id FROM users WHERE dni = ?',
-        [dni]
+        "SELECT id FROM users WHERE dni = ?",
+        [dni],
       );
 
       if (existingUsers.length > 0) {
-        throw new Error('El DNI ya está registrado');
+        throw new Error("El DNI ya está registrado");
       }
 
       // Hashear contraseña
@@ -38,28 +44,27 @@ export class AuthService {
 
       // Insertar usuario
       const [result]: any = await db.query(
-        'INSERT INTO users (dni, password_hash, full_name, email, phone, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [dni, hashedPassword, fullName, email || null, phone || null, 'active']
+        "INSERT INTO users (dni, password_hash, full_name, email, phone, status) VALUES (?, ?, ?, ?, ?, ?)",
+        [dni, hashedPassword, fullName, email || null, phone || null, "active"],
       );
 
       const userId = result.insertId;
 
       // Asignar rol PACIENTE por defecto
-      await this.assignRoleToUser(userId, 'PACIENTE');
+      await this.assignRoleToUser(userId, "PACIENTE");
 
       // Crear perfil de paciente
-      await db.query(
-        'INSERT INTO patient_profiles (user_id) VALUES (?)',
-        [userId]
-      );
+      await db.query("INSERT INTO patient_profiles (user_id) VALUES (?)", [
+        userId,
+      ]);
 
       // Obtener usuario creado
       const user = await this.getUserById(userId);
-      const token = await this.generateToken(user, 'PACIENTE');
+      const token = await this.generateToken(user, "PACIENTE");
 
       return {
         token,
-        user
+        user,
       };
     } catch (error) {
       throw error;
@@ -69,39 +74,42 @@ export class AuthService {
   /**
    * Asignar rol a usuario
    */
-  private async assignRoleToUser(userId: number, roleName: string): Promise<void> {
+  private async assignRoleToUser(
+    userId: number,
+    roleName: string,
+  ): Promise<void> {
     const db = getDatabase();
 
     try {
       // Obtener ID del rol
       const [roles]: any = await db.query(
-        'SELECT id FROM roles WHERE name = ?',
-        [roleName]
+        "SELECT id FROM roles WHERE name = ?",
+        [roleName],
       );
 
       if (roles.length === 0) {
         // Crear rol si no existe
         const [roleResult]: any = await db.query(
-          'INSERT INTO roles (name) VALUES (?)',
-          [roleName]
+          "INSERT INTO roles (name) VALUES (?)",
+          [roleName],
         );
-        
+
         const roleId = roleResult.insertId;
-        
+
         // Asignar rol al usuario
         await db.query(
-          'INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)',
-          [userId, roleId]
+          "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          [userId, roleId],
         );
       } else {
         const roleId = roles[0].id;
         await db.query(
-          'INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)',
-          [userId, roleId]
+          "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          [userId, roleId],
         );
       }
     } catch (error) {
-      console.error('Error assigning role:', error);
+      console.error("Error assigning role:", error);
       throw error;
     }
   }
@@ -122,19 +130,22 @@ export class AuthService {
          LEFT JOIN user_roles ur ON u.id = ur.user_id
          LEFT JOIN roles r ON ur.role_id = r.id
          WHERE u.dni = ?`,
-        [dni]
+        [dni],
       );
 
       if (users.length === 0) {
-        throw new Error('DNI o contraseña incorrectos');
+        throw new Error("DNI o contraseña incorrectos");
       }
 
       const user = users[0];
 
       // Validar contraseña
-      const isPasswordValid = await bcryptjs.compare(password, user.password_hash);
+      const isPasswordValid = await bcryptjs.compare(
+        password,
+        user.password_hash,
+      );
       if (!isPasswordValid) {
-        throw new Error('DNI o contraseña incorrectos');
+        throw new Error("DNI o contraseña incorrectos");
       }
 
       // Obtener usuario con datos adicionales
@@ -143,7 +154,7 @@ export class AuthService {
 
       return {
         token,
-        user: userWithRole
+        user: userWithRole,
       };
     } catch (error) {
       throw error;
@@ -157,12 +168,12 @@ export class AuthService {
     const db = getDatabase();
 
     const [users]: any = await db.query(
-      'SELECT id, dni, email, full_name, phone, status, created_at, updated_at FROM users WHERE id = ?',
-      [userId]
+      "SELECT id, dni, email, full_name, phone, status, created_at, updated_at FROM users WHERE id = ?",
+      [userId],
     );
 
     if (users.length === 0) {
-      throw new Error('Usuario no encontrado');
+      throw new Error("Usuario no encontrado");
     }
 
     return users[0];
@@ -171,37 +182,36 @@ export class AuthService {
   /**
    * Generar JWT token
    */
-  private async generateToken(user: UserResponse, role: Role = 'PACIENTE'): Promise<string> {
+  private async generateToken(
+    user: UserResponse,
+    role: Role = "PACIENTE",
+  ): Promise<string> {
     const db = getDatabase();
-    
+
     // Obtener el patient_id del usuario
     let patientId: number | null = null;
-    if (role === 'PACIENTE') {
+    if (role === "PACIENTE") {
       try {
         const [patients]: any = await db.query(
-          'SELECT id FROM patient_profiles WHERE user_id = ?',
-          [user.id]
+          "SELECT id FROM patient_profiles WHERE user_id = ?",
+          [user.id],
         );
         if (patients.length > 0) {
           patientId = patients[0].id;
         }
       } catch (error) {
-        console.error('Error getting patient profile:', error);
+        console.error("Error getting patient profile:", error);
       }
     }
-    
+
     const payload = {
       userId: user.id,
       patientId: patientId,
       dni: user.dni,
-      role: role || 'PACIENTE'
+      role: role || "PACIENTE",
     };
 
-    return jwt.sign(
-      payload, 
-      this.jwtSecret, 
-      { expiresIn: '7d' } as any
-    );
+    return jwt.sign(payload, this.jwtSecret, { expiresIn: "7d" } as any);
   }
 
   /**
@@ -212,7 +222,7 @@ export class AuthService {
       const decoded = jwt.verify(token, this.jwtSecret);
       return decoded;
     } catch (error) {
-      throw new Error('Token inválido o expirado');
+      throw new Error("Token inválido o expirado");
     }
   }
 
@@ -227,7 +237,7 @@ export class AuthService {
 
       return {
         token: newToken,
-        user
+        user,
       };
     } catch (error) {
       throw error;

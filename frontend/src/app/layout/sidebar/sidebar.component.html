@@ -1,4 +1,19 @@
 <aside class="sidebar">
+  <button
+    class="collapse-btn"
+    type="button"
+    (click)="collapseSidebar.emit()"
+    aria-label="Ocultar menú lateral"
+    title="Ocultar menú lateral"
+  >
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59Z"
+      />
+    </svg>
+  </button>
+
   <nav class="menu">
     <a
       class="item"

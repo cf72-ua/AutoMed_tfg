@@ -2,22 +2,22 @@
  * Configuración de conexión a base de datos MySQL
  */
 
-import mysql from 'mysql2/promise';
-import { Pool } from 'mysql2/promise';
+import mysql from "mysql2/promise";
+import { Pool } from "mysql2/promise";
 
 let pool: Pool;
 
-export async function initializeDatabase(): Promise<Pool> {
+function createDatabasePool(): Pool {
   const config: any = {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3306'),
-    user: process.env.DB_USER || 'root',
-    database: process.env.DB_NAME || 'telemedicina_tfg',
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "3306"),
+    user: process.env.DB_USER || "root",
+    database: process.env.DB_NAME || "telemedicina_tfg",
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 0
+    keepAliveInitialDelay: 0,
   };
 
   // Solo agregar password si está definida y no vacía
@@ -25,23 +25,29 @@ export async function initializeDatabase(): Promise<Pool> {
     config.password = process.env.DB_PASSWORD;
   }
 
-  pool = mysql.createPool(config);
+  return mysql.createPool(config);
+}
+
+export async function initializeDatabase(): Promise<Pool> {
+  if (!pool) {
+    pool = createDatabasePool();
+  }
 
   // Test connection
   try {
     const connection = await pool.getConnection();
-    console.log('✅ Database connection successful');
+    console.log("✅ Database connection successful");
     connection.release();
     return pool;
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    console.error("❌ Database connection failed:", error);
     throw error;
   }
 }
 
 export function getDatabase(): Pool {
   if (!pool) {
-    throw new Error('Database not initialized. Call initializeDatabase() first.');
+    pool = createDatabasePool();
   }
   return pool;
 }
@@ -62,7 +68,10 @@ export async function query<T>(sql: string, values: any[] = []): Promise<T[]> {
 /**
  * Query única
  */
-export async function queryOne<T>(sql: string, values: any[] = []): Promise<T | null> {
+export async function queryOne<T>(
+  sql: string,
+  values: any[] = [],
+): Promise<T | null> {
   const results = await query<T>(sql, values);
   return results.length > 0 ? results[0] : null;
 }

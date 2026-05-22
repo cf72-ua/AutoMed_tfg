@@ -1,0 +1,113 @@
+    <div class="signature-manager">
+      <div class="manager-header">
+        <div class="manager-title">
+          <h2>Gestor de Firmas Digitales</h2>
+          <p>Administra las firmas que utilizarás para validar y generar informes médicos.</p>
+        </div>
+        <div class="manager-ill"></div>
+      </div>
+
+      <div class="manager-content">
+        
+        <div class="upload-section">
+          <div class="section-heading">
+            <h3>Subir Nueva Firma</h3>
+          </div>
+          <form [formGroup]="uploadForm" (ngSubmit)="onUpload()" class="upload-form">
+            <div class="form-group">
+              <label for="signatureFile">Archivo PNG de Firma *</label>
+              <input
+                id="signatureFile"
+                type="file"
+                accept="image/png"
+                (change)="onFileSelected($event)"
+                formControlName="file"
+                class="form-control"
+                required
+              />
+              <div class="form-text">
+                Solo se aceptan archivos PNG. Tamaño máximo: 5MB
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="namePrinted">Nombre a Imprimir *</label>
+              <input
+                id="namePrinted"
+                type="text"
+                formControlName="namePrinted"
+                class="form-control"
+                placeholder="Ej: Dr. Juan Pérez González"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Vista Previa</label>
+              <div *ngIf="filePreview" class="preview-box">
+                <img [src]="filePreview" alt="Preview" />
+              </div>
+              <div *ngIf="!filePreview" class="preview-placeholder">
+                Selecciona una imagen para ver la vista previa
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!uploadForm.valid || isUploading"
+            >
+              {{ isUploading ? 'Subiendo...' : '⬆️ Subir Firma' }}
+            </button>
+          </form>
+        </div>
+
+        
+        <div class="signatures-section">
+          <div class="section-heading">
+            <h3>Mis Firmas</h3>
+          </div>
+
+          <app-loading-spinner *ngIf="isLoading" [message]="'Cargando firmas...'" ></app-loading-spinner>
+
+          <div *ngIf="!isLoading && signatures.length > 0" class="signatures-grid">
+            <div *ngFor="let sig of signatures" class="signature-item">
+              <div class="signature-card">
+                <div class="signature-image">
+                  <img [src]="sig.imageUrl" [alt]="sig.namePrinted" />
+                </div>
+                <div class="signature-details">
+                  <h4>{{ sig.namePrinted }}</h4>
+                  <p class="date">Creada: {{ sig.createdAt | date: 'short' }}</p>
+                  <div class="status">
+                    <span *ngIf="sig.isActive" class="badge badge-active">✓ Activa</span>
+                    <span *ngIf="!sig.isActive" class="badge badge-inactive">○ Inactiva</span>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button
+                    *ngIf="!sig.isActive"
+                    class="btn btn-sm btn-activate"
+                    (click)="activateSignature(sig.id)"
+                    title="Activar esta firma"
+                  >
+                    Activar
+                  </button>
+                  <button
+                    class="btn btn-sm btn-delete"
+                    (click)="deleteSignature(sig.id)"
+                    title="Eliminar firma"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!isLoading && signatures.length === 0" class="alert alert-info">
+            No hay firmas registradas. Sube tu primera firma para poder firmar documentos.
+          </div>
+        </div>
+      </div>
+    </div>

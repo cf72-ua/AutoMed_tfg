@@ -1,40 +1,73 @@
 <div class="page">
-  <!-- Error message -->
   <div class="error-banner" *ngIf="loadingError()">
     <span>{{ loadingError() }}</span>
     <button type="button" (click)="loadingError.set(null)">×</button>
   </div>
 
-  <!-- Hero -->
   <section class="hero">
     <div class="hero-left">
       <h1>Mi Calendario</h1>
-      <p>Gestiona tus citas médicas y tu plan de medicación</p>
+      <p *ngIf="currentRole() === 'DOCTOR'">
+        Gestiona las citas con tus pacientes y sus medicaciones
+      </p>
+      <p *ngIf="currentRole() === 'PACIENTE'">
+        Gestiona tus citas médicas y tu plan de medicación
+      </p>
 
       <div class="month-picker">
-        <button class="icon" type="button" (click)="prevMonth()" aria-label="Mes anterior">‹</button>
+        <button
+          class="icon"
+          type="button"
+          (click)="prevMonth()"
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
 
         <div class="month-select">
           <span class="label">{{ monthLabel() }}</span>
-          <select (change)="setMonth(+($any($event.target).value))" [value]="viewMonth()">
-            <option *ngFor="let opt of monthOptions()" [value]="opt.value">{{ opt.label }}</option>
+          <select
+            (change)="setMonth(+($any($event.target).value))"
+            [value]="viewMonth()"
+          >
+            <option *ngFor="let opt of monthOptions()" [value]="opt.value">
+              {{ opt.label }}
+            </option>
           </select>
         </div>
 
-        <button class="icon" type="button" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+        <button
+          class="icon"
+          type="button"
+          (click)="nextMonth()"
+          aria-label="Mes siguiente"
+        >
+          ›
+        </button>
+      </div>
+
+      <div class="patient-filter" *ngIf="currentRole() === 'DOCTOR'">
+        <select
+          [(ngModel)]="selectedPatientId"
+          (change)="selectedPatientId() ? filterByPatient(selectedPatientId()!) : clearPatientFilter()"
+        >
+          <option [ngValue]="null">Ver todas las citas</option>
+          <option
+            [ngValue]="patient.id"
+            *ngFor="let patient of availablePatients()"
+          >
+            {{ patient.name }}
+          </option>
+        </select>
       </div>
     </div>
 
     <div class="hero-right">
-      <div class="hero-illustration">
-        <!-- aquí puedes meter tu imagen de fondo/ilustración -->
-      </div>
+      <div class="hero-illustration"></div>
     </div>
   </section>
 
-  <!-- Content -->
   <section class="content">
-    <!-- Calendar -->
     <div class="calendar-card">
       <div class="cal-header">
         <span class="cal-title">{{ monthLabel() }}</span>
@@ -55,8 +88,14 @@
               <div class="day" *ngIf="cell.day">{{ cell.day }}</div>
 
               <div class="events" *ngIf="cell.day">
-                <ng-container *ngFor="let ev of eventsFor(cell.dateStr); trackBy: trackByIdx">
-                  <div class="event" [class.blue]="ev.type==='CONSULTA'" [class.orange]="ev.type==='MEDICACION'">
+                <ng-container
+                  *ngFor="let ev of eventsFor(cell.dateStr); trackBy: trackByIdx"
+                >
+                  <div
+                    class="event"
+                    [class.blue]="ev.type==='CONSULTA'"
+                    [class.orange]="ev.type==='MEDICACION'"
+                  >
                     {{ ev.title }}
                   </div>
                 </ng-container>
@@ -72,19 +111,36 @@
       </div>
     </div>
 
-    <!-- Right panel -->
     <aside class="side">
-      <!-- Appointments Section -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">Próximas Citas</div>
-          <button class="btn-add" type="button" (click)="openAppointmentForm()" title="Agregar cita">+</button>
+          <div class="panel-title">
+            <span *ngIf="currentRole() === 'DOCTOR'">Citas Programadas</span>
+            <span *ngIf="currentRole() === 'PACIENTE'">Próximas Citas</span>
+          </div>
+          <button
+            class="btn-add"
+            type="button"
+            (click)="openAppointmentForm()"
+            *ngIf="currentRole() === 'DOCTOR'"
+            title="Agregar cita"
+          >
+            +
+          </button>
         </div>
 
         <div *ngIf="isLoading()" class="loading">Cargando...</div>
 
-        <div *ngIf="upcoming().length === 0 && !isLoading()" class="empty-state">
-          No hay citas programadas
+        <div
+          *ngIf="upcoming().length === 0 && !isLoading()"
+          class="empty-state"
+        >
+          <span *ngIf="currentRole() === 'DOCTOR'"
+            >No hay citas programadas</span
+          >
+          <span *ngIf="currentRole() === 'PACIENTE'"
+            >No hay citas programadas</span
+          >
         </div>
 
         <div class="appt" *ngFor="let a of upcoming(); trackBy: trackByIdx">
@@ -92,18 +148,43 @@
           <div class="appt-body">
             <div class="appt-title">{{ a.title }}</div>
             <div class="appt-meta">{{ a.dateLabel }}</div>
-            <div class="appt-meta">{{ a.doctor }}</div>
+            <div class="appt-meta" *ngIf="currentRole() === 'PACIENTE'">
+              Dr. {{ a.doctor }}
+            </div>
             <div class="appt-meta">{{ a.place }}</div>
           </div>
-          <button class="appt-delete" type="button" (click)="deleteAppointment(a.id)" aria-label="Eliminar">✕</button>
+          <div class="appt-actions">
+            <button
+              class="appt-delete"
+              type="button"
+              (click)="deleteAppointment(a.id)"
+              aria-label="Eliminar"
+            >
+              ✕
+            </button>
+            <button
+              class="appt-action"
+              type="button"
+              *ngIf="currentRole() === 'PACIENTE'"
+              title="Solicitar cambio de fecha"
+            >
+              📅
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Medications Section -->
-      <div class="panel">
+      <div class="panel" *ngIf="currentRole() === 'PACIENTE'">
         <div class="panel-header">
-          <div class="panel-title">Alarma de Medicación</div>
-          <button class="btn-add" type="button" (click)="openMedicationForm()" title="Agregar medicación">+</button>
+          <div class="panel-title">Mi Plan de Medicación</div>
+          <button
+            class="btn-add"
+            type="button"
+            (click)="openMedicationForm()"
+            title="Agregar medicación"
+          >
+            +
+          </button>
         </div>
 
         <div *ngIf="alarms().length === 0" class="empty-state">
@@ -115,28 +196,94 @@
           <div class="alarm-body">
             <div class="alarm-name">{{ al.name }}</div>
             <div class="alarm-dose">{{ al.dose }}</div>
+            <div class="alarm-dose">{{ al.endDateLabel }}</div>
           </div>
           <div class="alarm-time">{{ al.timeLabel }}</div>
-          <button class="alarm-delete" type="button" (click)="deleteMedication(al.id)" aria-label="Eliminar">✕</button>
+          <button
+            class="alarm-delete"
+            type="button"
+            (click)="deleteMedication(al.id)"
+            aria-label="Eliminar"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="panel" *ngIf="currentRole() === 'DOCTOR'">
+        <div class="panel-header">
+          <div class="panel-title">Planificar Medicación del Paciente</div>
+          <button
+            class="btn-add"
+            type="button"
+            (click)="openMedicationForm()"
+            title="Agregar medicación"
+          >
+            +
+          </button>
+        </div>
+
+        <div *ngIf="alarms().length === 0" class="empty-state">
+          Sin medicaciones planificadas
+        </div>
+
+        <div class="alarm" *ngFor="let al of alarms(); trackBy: trackByIdx">
+          <div class="alarm-icon">⏰</div>
+          <div class="alarm-body">
+            <div class="alarm-name">{{ al.name }}</div>
+            <div class="alarm-dose">{{ al.dose }}</div>
+            <div class="alarm-dose">{{ al.endDateLabel }}</div>
+          </div>
+          <div class="alarm-time">{{ al.timeLabel }}</div>
+          <button
+            class="alarm-delete"
+            type="button"
+            (click)="deleteMedication(al.id)"
+            aria-label="Eliminar"
+          >
+            ✕
+          </button>
         </div>
       </div>
     </aside>
   </section>
 
-  <!-- Appointment Form Modal -->
-  <div class="modal-overlay" *ngIf="showAppointmentForm()" (click)="closeAppointmentForm()"></div>
+  <div
+    class="modal-overlay"
+    *ngIf="showAppointmentForm()"
+    (click)="closeAppointmentForm()"
+  ></div>
   <div class="modal" *ngIf="showAppointmentForm()">
     <div class="modal-header">
       <h3>Agregar Cita</h3>
-      <button class="close-btn" type="button" (click)="closeAppointmentForm()">✕</button>
+      <button class="close-btn" type="button" (click)="closeAppointmentForm()">
+        ✕
+      </button>
     </div>
     <div class="modal-body">
+      <div class="form-group" *ngIf="currentRole() === 'DOCTOR'">
+        <label>Paciente *</label>
+        <select [(ngModel)]="appointmentForm()['patientId']" required>
+          <option value="">Selecciona un paciente</option>
+          <option
+            *ngFor="let patient of availablePatients()"
+            [value]="patient.id"
+          >
+            {{ patient.name }}
+          </option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label>Título</label>
-        <input type="text" placeholder="Ej: Consulta Médica" [(ngModel)]="appointmentForm()['title']" />
+        <input
+          type="text"
+          placeholder="Ej: Consulta Médica"
+          [(ngModel)]="appointmentForm()['title']"
+        />
       </div>
       <div class="form-group">
-        <label>Fecha</label>
+        <label>Fecha *</label>
         <input type="date" [(ngModel)]="appointmentForm()['date']" required />
       </div>
       <div class="form-group">
@@ -145,34 +292,84 @@
       </div>
       <div class="form-group">
         <label>Lugar</label>
-        <input type="text" placeholder="Ej: Consultorio 101" [(ngModel)]="appointmentForm()['place']" />
+        <input
+          type="text"
+          placeholder="Ej: Consultorio 101"
+          [(ngModel)]="appointmentForm()['place']"
+        />
       </div>
       <div class="form-group">
         <label>Notas</label>
-        <textarea placeholder="Notas adicionales" [(ngModel)]="appointmentForm()['notes']"></textarea>
+        <textarea
+          placeholder="Notas adicionales"
+          [(ngModel)]="appointmentForm()['notes']"
+        ></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" type="button" (click)="closeAppointmentForm()">Cancelar</button>
-      <button class="btn btn-primary" type="button" (click)="submitAppointment()">Guardar Cita</button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="closeAppointmentForm()"
+      >
+        Cancelar
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="submitAppointment()"
+      >
+        Guardar Cita
+      </button>
     </div>
   </div>
 
-  <!-- Medication Form Modal -->
-  <div class="modal-overlay" *ngIf="showMedicationForm()" (click)="closeMedicationForm()"></div>
+  <div
+    class="modal-overlay"
+    *ngIf="showMedicationForm()"
+    (click)="closeMedicationForm()"
+  ></div>
   <div class="modal" *ngIf="showMedicationForm()">
     <div class="modal-header">
-      <h3>Agregar Medicación</h3>
-      <button class="close-btn" type="button" (click)="closeMedicationForm()">✕</button>
+      <h3>
+        <span *ngIf="currentRole() === 'DOCTOR'">Planificar Medicación</span>
+        <span *ngIf="currentRole() === 'PACIENTE'">Agregar Medicación</span>
+      </h3>
+      <button class="close-btn" type="button" (click)="closeMedicationForm()">
+        ✕
+      </button>
     </div>
     <div class="modal-body">
+      <div class="form-group" *ngIf="currentRole() === 'DOCTOR'">
+        <label>Paciente *</label>
+        <select [(ngModel)]="medicationForm()['patientId']" required>
+          <option value="">Selecciona un paciente</option>
+          <option
+            *ngFor="let patient of availablePatients()"
+            [value]="patient.id"
+          >
+            {{ patient.name }}
+          </option>
+        </select>
+      </div>
+
       <div class="form-group">
-        <label>Nombre de la Medicación</label>
-        <input type="text" placeholder="Ej: Ibuprofeno" [(ngModel)]="medicationForm()['medicationName']" required />
+        <label>Nombre de la Medicación *</label>
+        <input
+          type="text"
+          placeholder="Ej: Ibuprofeno"
+          [(ngModel)]="medicationForm()['medicationName']"
+          required
+        />
       </div>
       <div class="form-group">
-        <label>Dosis</label>
-        <input type="text" placeholder="Ej: 200 mg" [(ngModel)]="medicationForm()['dose']" required />
+        <label>Dosis *</label>
+        <input
+          type="text"
+          placeholder="Ej: 200 mg"
+          [(ngModel)]="medicationForm()['dose']"
+          required
+        />
       </div>
       <div class="form-group">
         <label>Frecuencia</label>
@@ -185,13 +382,29 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Hora</label>
+        <label>Hora *</label>
         <input type="time" [(ngModel)]="medicationForm()['time']" required />
+      </div>
+      <div class="form-group">
+        <label>Fecha final *</label>
+        <input type="date" [(ngModel)]="medicationForm()['endDate']" required />
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" type="button" (click)="closeMedicationForm()">Cancelar</button>
-      <button class="btn btn-primary" type="button" (click)="submitMedication()">Guardar Medicación</button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="closeMedicationForm()"
+      >
+        Cancelar
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="submitMedication()"
+      >
+        Guardar Medicación
+      </button>
     </div>
   </div>
 </div>

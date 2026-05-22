@@ -1,13 +1,17 @@
 <div class="login-page">
   <div class="login-card">
     <div class="brand">
-    <img class="brand-logo" src="assets/AutoMed_logo.png" alt="AutoMed" />
+      <img class="brand-logo" src="assets/AutoMed_logo.png" alt="AutoMed" />
     </div>
 
     <h1 class="title">Iniciar Sesión</h1>
 
     <div class="form-box">
       <form (ngSubmit)="onSubmit()" autocomplete="on">
+        <div class="error-message" *ngIf="errorMessage" role="alert">
+          {{ errorMessage }}
+        </div>
+
         <div class="field">
           <label for="dni">DNI / NIE</label>
 
@@ -60,10 +64,16 @@
           </div>
         </div>
 
-        <a class="forgot" href="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
+        <a class="forgot" href="/auth/forgot-password"
+          >¿Olvidaste tu contraseña?</a
+        >
 
-        <button class="primary-btn" type="submit" [disabled]="!dni || !password">
-          Iniciar Sesión
+        <button
+          class="primary-btn"
+          type="submit"
+          [disabled]="!isFormValid || isSubmitting"
+        >
+          {{ isSubmitting ? "Iniciando..." : "Iniciar Sesión" }}
         </button>
 
         <p class="signup">

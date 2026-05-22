@@ -1,0 +1,213 @@
+<div class="patients-container">
+  <section class="patients-header">
+    <div>
+      <h2>Pacientes</h2>
+    </div>
+  </section>
+
+  <section class="filters-section">
+    <div class="filter-field search-field">
+      <label for="patientSearch">Buscar</label>
+      <input
+        id="patientSearch"
+        type="search"
+        [(ngModel)]="searchText"
+        class="form-control"
+        placeholder="Nombre, DNI o email"
+      />
+    </div>
+
+    <button class="btn btn-light clear-btn" type="button" (click)="clearFilters()">
+      Limpiar
+    </button>
+  </section>
+
+  <app-loading-spinner
+    *ngIf="isLoadingPatients()"
+    [message]="'Cargando pacientes...'"
+  ></app-loading-spinner>
+
+  <div class="alert alert-info" *ngIf="!isLoadingPatients() && loadingError()">
+    {{ loadingError() }}
+  </div>
+
+  <div class="patients-layout" *ngIf="!isLoadingPatients() && !loadingError()">
+    <aside class="patients-list">
+      <button
+        class="patient-row"
+        type="button"
+        *ngFor="let patient of filteredPatients(); trackBy: trackById"
+        [class.active]="patient.id === selectedPatientId()"
+        (click)="selectPatient(patient.id)"
+      >
+        <span class="avatar">{{ patientInitials(patient) }}</span>
+        <span class="patient-main">
+          <strong>{{ patient.fullName }}</strong>
+          <small>{{ patient.email || "Email no registrado" }}</small>
+        </span>
+        <span class="risk-pill" [ngClass]="riskClass(patient.id === selectedPatientId() ? riskLevel() : '')">
+          {{ patient.id === selectedPatientId() ? riskLabel() : "Ver" }}
+        </span>
+      </button>
+
+      <div class="empty-list" *ngIf="filteredPatients().length === 0">
+        No hay pacientes que coincidan con los filtros.
+      </div>
+    </aside>
+
+    <main class="patient-detail" *ngIf="selectedPatient() as patient">
+      <app-loading-spinner
+        *ngIf="isLoadingDetail()"
+        [message]="'Cargando perfil del paciente...'"
+      ></app-loading-spinner>
+
+      <ng-container *ngIf="!isLoadingDetail()">
+        <section class="profile-panel">
+          <div class="profile-heading">
+            <span class="avatar large">{{ patientInitials(patient) }}</span>
+            <div>
+              <h3>{{ patient.fullName }}</h3>
+              <p>{{ patient.email || "Email no registrado" }}</p>
+            </div>
+          </div>
+
+          <div class="profile-grid">
+            <div class="profile-item">
+              <span>DNI</span>
+              <strong>{{ patient.dni || "No registrado" }}</strong>
+            </div>
+            <div class="profile-item">
+              <span>Edad</span>
+              <strong>{{ patientAge(patient) }}</strong>
+            </div>
+            <div class="profile-item">
+              <span>Teléfono</span>
+              <strong>{{ patient.phone || "No registrado" }}</strong>
+            </div>
+            <div class="profile-item">
+              <span>Última actividad</span>
+              <strong>{{ lastActivityLabel() }}</strong>
+            </div>
+          </div>
+
+          <div class="summary-strip">
+            <div class="summary-item">
+              <span>Hábitos</span>
+              <strong>{{ habits().length }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Citas</span>
+              <strong>{{ appointments().length }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Medicación</span>
+              <strong>{{ medications().length }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>Informes firmados</span>
+              <strong>{{ signedReportsCount() }}</strong>
+            </div>
+            <div class="summary-item status" [ngClass]="riskClass()">
+              <span>Seguimiento</span>
+              <strong>{{ riskLabel() }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="evolution-section">
+          <div class="section-title">
+            <h3>Evolución del paciente</h3>
+          </div>
+
+          <div class="evolution-grid">
+            <article
+              class="evolution-card"
+              *ngFor="let card of evolutionCards(); trackBy: trackByKey"
+              [ngClass]="'tone-' + card.tone"
+            >
+              <div class="card-head">
+                <div>
+                  <h4>{{ card.title }}</h4>
+                  <span>{{ card.entries }} registros</span>
+                </div>
+                <strong>{{ card.latest }}</strong>
+              </div>
+
+              <svg class="mini-chart" viewBox="0 0 220 92" aria-hidden="true">
+                <line x1="8" y1="78" x2="212" y2="78"></line>
+                <polyline
+                  *ngIf="card.points.length > 0"
+                  [attr.points]="card.path"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></polyline>
+                <circle
+                  *ngFor="let point of card.points; let i = index"
+                  [attr.cx]="calculateCx(card.points, i)"
+                  [attr.cy]="calculateCy(card.points, i)"
+                  r="3"
+                  fill="currentColor"
+                ></circle>
+                <text
+                  *ngIf="card.points.length === 0"
+                  x="110"
+                  y="48"
+                  text-anchor="middle"
+                >
+                  Sin datos
+                </text>
+              </svg>
+
+              <div class="card-foot">
+                <span>Promedio</span>
+                <strong>{{ card.average }}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="detail-grid">
+          <div class="reports-panel">
+            <div class="section-title">
+              <h3>Informes recientes</h3>
+            </div>
+
+            <div class="reports-table" *ngIf="recentReports().length > 0">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let report of recentReports(); trackBy: trackById">
+                    <td><strong>{{ report.title }}</strong></td>
+                    <td><span class="badge bg-info">{{ report.reportTypeName }}</span></td>
+                    <td><span class="badge status-badge">{{ getStatusLabel(report.status) }}</span></td>
+                    <td>{{ report.createdAt | date: "shortDate" }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-info" type="button" (click)="viewReport(report.id)">
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="empty-panel" *ngIf="recentReports().length === 0">
+              Este paciente todavía no tiene informes.
+            </div>
+          </div>
+        </section>
+      </ng-container>
+    </main>
+  </div>
+</div>

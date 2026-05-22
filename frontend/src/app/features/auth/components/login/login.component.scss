@@ -11,14 +11,14 @@
   background: #eaf6ff;
   border-radius: 6px;
   padding: 34px 28px 42px;
-  padding-top: 190px; // <-- reserva hueco para el logo grande
+  padding-top: 190px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
   position: relative;
 }
 
 .brand {
   position: absolute;
-  top: -8px;               /* <-- más arriba (antes 18px/24px) */
+  top: -8px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
@@ -26,7 +26,7 @@
 }
 
 .brand-logo {
-  height: 300px;           /* <-- un poco más grande (antes 210px) */
+  height: 300px;
   width: auto;
   max-height: none;
   max-width: none;
@@ -39,7 +39,7 @@
   text-align: center;
   font-size: 40px;
   line-height: 1.1;
-  margin: 0 0 22px;   /* <-- quita el margen superior */
+  margin: 0 0 22px;
   color: #0f4b7a;
   font-weight: 800;
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.08);
@@ -101,7 +101,9 @@ form {
     padding: 0 14px 0 62px;
     font-size: 15px;
     outline: none;
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    transition:
+      box-shadow 0.15s ease,
+      border-color 0.15s ease;
 
     &::placeholder {
       color: #9aa3ad;
@@ -131,13 +133,15 @@ form {
   height: 52px;
   border-radius: 10px;
   border: none;
-  background: #4e9d1d; // verde botón
+  background: #4e9d1d;
   color: #fff;
   font-size: 18px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 10px 14px rgba(78, 157, 29, 0.28);
-  transition: transform 0.08s ease, filter 0.15s ease;
+  transition:
+    transform 0.08s ease,
+    filter 0.15s ease;
 
   &:hover:not(:disabled) {
     filter: brightness(1.02);
@@ -172,10 +176,9 @@ form {
   }
 }
 
-/* Ilustración izquierda (mujer) */
 .illu-left {
   position: absolute;
-  left: -95px;   /* cuanto sobresale fuera del card */
+  left: -95px;
   bottom: 8px;
   width: 240px;
   height: 200px;
@@ -186,16 +189,15 @@ form {
     position: absolute;
     left: 0;
     bottom: 0;
-    max-width: 210px; /* <-- mujer más grande */
+    max-width: 210px;
     height: auto;
     filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.18));
   }
 }
 
-/* Ilustración derecha (doctora) */
 .illu-right {
   position: absolute;
-  right: -95px;  /* sobresale fuera del card por la derecha */
+  right: -95px;
   bottom: 0px;
   width: 240px;
   height: 220px;
@@ -206,13 +208,12 @@ form {
     position: absolute;
     right: 0;
     bottom: 0;
-    max-width: 150px; /* ajusta tamaño doctora */
+    max-width: 150px;
     height: auto;
     filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.18));
   }
 }
 
-/* Responsive */
 @media (max-width: 520px) {
   .title {
     font-size: 32px;
@@ -228,7 +229,9 @@ form {
     width: 170px;
     height: 150px;
 
-    .illu { max-width: 140px; }
+    .illu {
+      max-width: 140px;
+    }
   }
 
   .illu-right {
@@ -237,10 +240,18 @@ form {
     width: 170px;
     height: 160px;
 
-    .illu { max-width: 140px; }
+    .illu {
+      max-width: 140px;
+    }
   }
 
-  .brand { top: 0px; } 
-  .brand-logo { height: 170px; }
-  .login-card { padding-top: 100px; }
+  .brand {
+    top: 0px;
+  }
+  .brand-logo {
+    height: 170px;
+  }
+  .login-card {
+    padding-top: 100px;
+  }
 }

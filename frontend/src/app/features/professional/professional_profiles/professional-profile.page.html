@@ -1,0 +1,117 @@
+<div class="profile-page">
+  <section class="profile-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Perfil profesional</span>
+      <h1>{{ displayName() }}</h1>
+      <p>Resumen de consulta, pacientes asignados e informes clínicos.</p>
+    </div>
+    <div class="hero-avatar" aria-hidden="true">{{ initials() }}</div>
+  </section>
+
+  <app-loading-spinner *ngIf="isLoading()" [message]="'Cargando perfil...'"></app-loading-spinner>
+
+  <div class="alert alert-info" *ngIf="!isLoading() && loadingError()">
+    {{ loadingError() }}
+  </div>
+
+  <ng-container *ngIf="!isLoading() && !loadingError()">
+    <section class="profile-panel">
+      <div class="profile-heading">
+        <span class="avatar">{{ initials() }}</span>
+        <div>
+          <h2>{{ displayName() }}</h2>
+          <p>{{ user()?.email || "Email no registrado" }}</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span>DNI</span>
+          <strong>{{ user()?.dni || tokenPayload()?.dni || "No registrado" }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Teléfono</span>
+          <strong>{{ user()?.phone || "No registrado" }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Rol</span>
+          <strong>{{ tokenPayload()?.role || "DOCTOR" }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Estado</span>
+          <strong>{{ user()?.status || "Activo" }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Pacientes</span>
+        <strong>{{ patients().length }}</strong>
+        <button type="button" (click)="goTo('/professional/patients')">Ver pacientes</button>
+      </article>
+      <article class="summary-card">
+        <span>Citas próximas</span>
+        <strong>{{ nextAppointments().length }}</strong>
+        <button type="button" (click)="goTo('/calendar')">Ver agenda</button>
+      </article>
+      <article class="summary-card">
+        <span>Informes firmados</span>
+        <strong>{{ signedReports() }}</strong>
+        <button type="button" (click)="goTo('/reports')">Ver informes</button>
+      </article>
+      <article class="summary-card">
+        <span>Borradores</span>
+        <strong>{{ draftReports() }}</strong>
+        <button type="button" (click)="goTo('/reports/new')">Crear informe</button>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel">
+        <div class="section-title">
+          <h3>Próximas citas</h3>
+          <button type="button" (click)="goTo('/calendar')">Agenda</button>
+        </div>
+
+        <div class="timeline-list" *ngIf="nextAppointments().length > 0">
+          <article class="timeline-item" *ngFor="let appointment of nextAppointments(); trackBy: trackById">
+            <span class="timeline-dot"></span>
+            <div>
+              <div class="timeline-head">
+                <strong>{{ appointment.title || "Cita médica" }}</strong>
+                <span>{{ formatDate(appointment.date) }}{{ appointment.time ? " · " + appointment.time : "" }}</span>
+              </div>
+              <p>{{ appointment.notes || appointment.place || "Seguimiento programado" }}</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="empty-panel" *ngIf="nextAppointments().length === 0">
+          No hay citas próximas en la agenda.
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>Pacientes recientes</h3>
+          <button type="button" (click)="goTo('/professional/patients')">Abrir</button>
+        </div>
+
+        <div class="patient-list" *ngIf="recentPatients().length > 0">
+          <article class="patient-row" *ngFor="let patient of recentPatients(); trackBy: trackById">
+            <span class="mini-avatar">{{ patient.fullName.slice(0, 1).toUpperCase() }}</span>
+            <div>
+              <strong>{{ patient.fullName }}</strong>
+              <small>{{ patient.email || patient.dni || "Sin contacto" }}</small>
+            </div>
+          </article>
+        </div>
+
+        <div class="empty-panel" *ngIf="recentPatients().length === 0">
+          Todavía no hay pacientes visibles.
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</div>

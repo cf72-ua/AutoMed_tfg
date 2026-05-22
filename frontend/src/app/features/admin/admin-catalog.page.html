@@ -1,0 +1,110 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h2>Catálogo</h2>
+    <p>
+      Revisa los tipos, especialidades y categorías que estructuran los datos
+      clínicos.
+    </p>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-field search-field">
+      <label for="catalogSearch">Buscar</label>
+      <input
+        id="catalogSearch"
+        class="form-control"
+        type="search"
+        placeholder="Buscar por nombre, slug o descripción"
+        [(ngModel)]="searchText"
+        (ngModelChange)="onFilterChange()"
+      />
+    </div>
+
+    <div class="filter-field">
+      <label for="categoryFilter">Categoría</label>
+      <select
+        id="categoryFilter"
+        class="form-select"
+        [(ngModel)]="selectedCategory"
+        (change)="onFilterChange()"
+      >
+        <option value="">Todas las categorías</option>
+        <option *ngFor="let category of categories" [value]="category">
+          {{ category }}
+        </option>
+      </select>
+    </div>
+
+    <button class="clear-btn" type="button" (click)="clearFilters()">
+      Limpiar
+    </button>
+  </div>
+
+  <app-loading-spinner
+    *ngIf="isLoading"
+    [message]="'Cargando catálogo...'"
+  ></app-loading-spinner>
+
+  <div *ngIf="!isLoading && filteredItems.length > 0" class="admin-table">
+    <table class="table">
+      <colgroup>
+        <col style="width: 18%" />
+        <col style="width: 24%" />
+        <col style="width: 18%" />
+        <col style="width: 26%" />
+        <col style="width: 14%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Nombre</th>
+          <th>Slug / plantilla</th>
+          <th>Descripción</th>
+          <th class="cell-center">ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of paginatedItems">
+          <td><span class="badge badge-blue">{{ item.category }}</span></td>
+          <td><strong>{{ item.name }}</strong></td>
+          <td>{{ item.slug || item.detail || "Sin dato" }}</td>
+          <td>{{ item.description || "Sin descripción" }}</td>
+          <td class="cell-center">{{ item.id }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <nav
+    class="pagination"
+    *ngIf="!isLoading && totalPages > 1"
+    aria-label="Paginación de catálogo"
+  >
+    <button
+      type="button"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+    >
+      Anterior
+    </button>
+    <button
+      type="button"
+      *ngFor="let page of [].constructor(totalPages); let i = index"
+      [class.active]="currentPage === i + 1"
+      (click)="goToPage(i + 1)"
+    >
+      {{ i + 1 }}
+    </button>
+    <button
+      type="button"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+    >
+      Siguiente
+    </button>
+  </nav>
+
+  <div *ngIf="!isLoading && filteredItems.length === 0" class="alert">
+    No hay elementos de catálogo que coincidan con los filtros.
+  </div>
+</div>

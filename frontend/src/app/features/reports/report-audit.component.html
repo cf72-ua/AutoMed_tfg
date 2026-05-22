@@ -1,0 +1,82 @@
+    <div class="audit-container">
+      <div class="audit-header">
+        <h2>Auditoría de Accesos - Informe #{{ reportId }}</h2>
+        <button class="btn btn-secondary" routerLink="../" title="Volver">← Volver</button>
+      </div>
+
+      <app-loading-spinner *ngIf="isLoading" [message]="'Cargando auditoría...'" ></app-loading-spinner>
+
+      <div *ngIf="!isLoading" class="audit-content">
+        
+        <div *ngIf="accessStats" class="stats-box">
+          <h3>Resumen de Accesos</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Visualizaciones</span>
+              <span class="stat-value">{{ accessStats.viewed || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Descargas</span>
+              <span class="stat-value">{{ accessStats.downloaded || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Generaciones</span>
+              <span class="stat-value">{{ accessStats.generated || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Firmas</span>
+              <span class="stat-value">{{ accessStats.signed || 0 }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Último Acceso</span>
+              <span class="stat-value">{{ accessStats.lastAccess | date: 'short' }}</span>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="audit-log">
+          <h3>Historial de Acciones</h3>
+
+          <div *ngIf="auditLog.length > 0" class="audit-table-wrapper">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Fecha y Hora</th>
+                  <th>Acción</th>
+                  <th>Usuario</th>
+                  <th>IP</th>
+                  <th>Notas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let entry of auditLog" [ngClass]="'action-' + entry.action.toLowerCase()">
+                  <td>{{ entry.createdAt | date: 'short' }}</td>
+                  <td>
+                    <span [ngClass]="'badge badge-' + getActionColor(entry.action)">
+                      {{ getActionLabel(entry.action) }}
+                    </span>
+                  </td>
+                  <td>{{ entry.actorName }}</td>
+                  <td class="text-muted">{{ entry.ipAddress || '-' }}</td>
+                  <td>{{ entry.reasonNotes || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="auditLog.length === 0" class="alert alert-info">
+            No hay registros de auditoría para este informe.
+          </div>
+        </div>
+
+        
+        <div class="privacy-note">
+          <p>
+            <strong>📋 Nota de Privacidad:</strong> Este registro de auditoría es confidencial y solo 
+            es visible para administradores y el propietario del informe. Todos los accesos quedan 
+            registrados para garantizar la seguridad y privacidad de los datos.
+          </p>
+        </div>
+      </div>
+    </div>

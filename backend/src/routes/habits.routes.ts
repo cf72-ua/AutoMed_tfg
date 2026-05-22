@@ -43,7 +43,6 @@ router.get(
         return res.status(400).json({ error: "Invalid patientId" });
       }
 
-      // Obtener datos de la última semana
       const today = new Date();
       const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
@@ -71,20 +70,24 @@ router.get(
 router.post("/", async (req: Request, res: Response) => {
   try {
     const { patientId, habitType, value, notes, loggedDate } = req.body;
+    const normalizedHabitType = String(habitType || "").toUpperCase();
 
-    if (!patientId || !habitType || value === undefined || !loggedDate) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Missing required fields: patientId, habitType, value, loggedDate",
-        });
+    if (!patientId || !habitType || !loggedDate) {
+      return res.status(400).json({
+        error: "Missing required fields: patientId, habitType, loggedDate",
+      });
+    }
+
+    if (normalizedHabitType !== "NUTRITION" && value === undefined) {
+      return res.status(400).json({
+        error: "Missing required field: value",
+      });
     }
 
     const createDto: CreateHabitLogDto = {
       patientId,
-      habitType: habitType.toUpperCase(),
-      value: parseFloat(value),
+      habitType: normalizedHabitType as CreateHabitLogDto["habitType"],
+      value: value !== undefined ? parseFloat(value) : undefined,
       notes,
       loggedDate,
     };
@@ -93,7 +96,10 @@ router.post("/", async (req: Request, res: Response) => {
     res.status(201).json(habit);
   } catch (error) {
     console.error("Error in POST /habits", error);
-    res.status(500).json({ error: "Failed to create habit log" });
+    res.status(500).json({
+      error:
+        error instanceof Error ? error.message : "Failed to create habit log",
+    });
   }
 });
 
@@ -144,5 +150,36 @@ router.delete("/:habitId", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete habit log" });
   }
 });
+
+/**
+ * POST /api/habits/:patientId/recommendations
+ * Generar recomendaciones personalizadas con IA
+ */
+router.post(
+  "/:patientId/recommendations",
+  async (req: Request, res: Response) => {
+    try {
+      const patientId = Number(req.params.patientId);
+      if (!Number.isFinite(patientId) || patientId <= 0) {
+        return res.status(400).json({ error: "Invalid patientId" });
+      }
+
+      const { AIRecommendationsService } =
+        await import("../services/ai-recommendations.service");
+
+      // ✅ Opción 2: el servicio se encarga de todo (BD + IA)
+      const result =
+        await AIRecommendationsService.generateFromPatientHabits(patientId);
+
+      return res.json(result);
+    } catch (error) {
+      console.error("Error generating recommendations:", error);
+      return res.status(500).json({
+        error: "Failed to generate recommendations",
+        details: String(error),
+      });
+    }
+  },
+);
 
 export default router;

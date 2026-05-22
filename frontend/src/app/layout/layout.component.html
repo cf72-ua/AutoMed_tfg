@@ -1,7 +1,26 @@
 <app-navbar></app-navbar>
 
-<div class="layout">
-  <app-sidebar *ngIf="isLoggedIn() && (role() === 'PACIENTE' || role() === 'PROFESIONAL')"></app-sidebar>
+<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed">
+  <app-sidebar
+    *ngIf="hasSidebar() && !sidebarCollapsed"
+    (collapseSidebar)="toggleSidebar()"
+  ></app-sidebar>
+
+  <button
+    *ngIf="hasSidebar() && sidebarCollapsed"
+    class="sidebar-toggle"
+    type="button"
+    (click)="toggleSidebar()"
+    aria-label="Mostrar menú lateral"
+    title="Mostrar menú lateral"
+  >
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"
+      />
+    </svg>
+  </button>
 
   <main class="content">
     <router-outlet></router-outlet>

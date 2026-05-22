@@ -2,9 +2,9 @@
  * Middleware de Autenticación JWT
  */
 
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import type { JwtPayload, AuthUser } from '../types/index.d';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import type { JwtPayload, AuthUser } from "../types/index.d";
 
 declare global {
   namespace Express {
@@ -14,25 +14,40 @@ declare global {
   }
 }
 
-export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateJWT = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split(' ')[1]; // Bearer <token>
+  const token = authHeader?.split(" ")[1]; // Bearer <token>
 
   if (!token) {
-    return res.status(401).json({ message: 'Access token required' });
+    return res.status(401).json({ message: "Access token required" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    console.log("Token decodificado:", decoded);
+
+    const roles = decoded.roles || (decoded.role ? [decoded.role] : []);
+
     req.user = {
       id: decoded.userId,
       dni: decoded.dni,
-      fullName: '', // Implementar: cargar del BD
-      roles: decoded.roles
+      fullName: "",
+      roles: roles as any,
     };
+
+    console.log("User asignado a req:", {
+      id: req.user.id,
+      dni: req.user.dni,
+      roles: req.user.roles,
+    });
     next();
   } catch (error) {
-    return res.status(403).json({ message: 'Invalid or expired token' });
+    console.error("Error en JWT verification:", error);
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -42,15 +57,17 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
 export const authorize = (...allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const hasRole = req.user.roles.some((role: string) => 
-      allowedRoles.includes(role)
+    const hasRole = req.user.roles.some((role: string) =>
+      allowedRoles.includes(role),
     );
 
     if (!hasRole) {
-      return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: insufficient permissions" });
     }
 
     next();
@@ -60,12 +77,17 @@ export const authorize = (...allowedRoles: string[]) => {
 /**
  * Middleware de manejo de errores
  */
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
-  
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.error("Error:", err);
+
   // Implementar mapeo de errores específicos
   res.status(500).json({
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 };

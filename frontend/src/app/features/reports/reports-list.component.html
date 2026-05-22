@@ -1,0 +1,210 @@
+    <div class="reports-container">
+      <div class="reports-header">
+        <h2>Mis Informes Médicos</h2>
+        <button class="btn btn-primary" routerLink="new">
+          + Nuevo Informe
+        </button>
+      </div>
+
+      <div class="filters-section">
+        <div class="filter-field search-field">
+          <label for="reportSearch">Buscar</label>
+          <input
+            id="reportSearch"
+            type="search"
+            [(ngModel)]="searchText"
+            (ngModelChange)="onClientFilterChange()"
+            class="form-control"
+            placeholder="Nombre del reporte"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="reportType">Tipo</label>
+          <select
+            id="reportType"
+            [(ngModel)]="selectedReportTypeId"
+            (change)="onServerFilterChange()"
+            class="form-select"
+          >
+            <option value="">Todos los tipos</option>
+            <option *ngFor="let type of reportTypes" [value]="type.id">
+              {{ type.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="fromDate">Desde</label>
+          <input
+            id="fromDate"
+            type="date"
+            [(ngModel)]="fromDate"
+            (change)="onServerFilterChange()"
+            class="form-control"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="toDate">Hasta</label>
+          <input
+            id="toDate"
+            type="date"
+            [(ngModel)]="toDate"
+            (change)="onServerFilterChange()"
+            class="form-control"
+          />
+        </div>
+
+        <div class="filter-field" *ngIf="currentRole() === 'PACIENTE'">
+          <label for="doctorFilter">Doctor</label>
+          <select
+            id="doctorFilter"
+            [(ngModel)]="selectedPerson"
+            (ngModelChange)="onClientFilterChange()"
+            class="form-select"
+          >
+            <option value="">Todos los doctores</option>
+            <option *ngFor="let doctor of doctorOptions" [value]="doctor">
+              {{ doctor }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-field" *ngIf="currentRole() === 'DOCTOR'">
+          <label for="patientFilter">Paciente</label>
+          <select
+            id="patientFilter"
+            [(ngModel)]="selectedPerson"
+            (ngModelChange)="onClientFilterChange()"
+            class="form-select"
+          >
+            <option value="">Todos los pacientes</option>
+            <option *ngFor="let patient of patientOptions" [value]="patient">
+              {{ patient }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="statusFilter">Estado</label>
+          <select
+            id="statusFilter"
+            [(ngModel)]="selectedStatus"
+            (change)="onServerFilterChange()"
+            class="form-select"
+          >
+            <option value="">Todos los estados</option>
+            <option value="draft">Borradores</option>
+            <option value="signed">Firmados</option>
+            <option value="archived">Archivados</option>
+          </select>
+        </div>
+
+        <button class="btn btn-light clear-btn" type="button" (click)="clearFilters()">
+          Limpiar
+        </button>
+      </div>
+
+      <app-loading-spinner
+        *ngIf="isLoading"
+        [message]="'Cargando informes...'"
+      ></app-loading-spinner>
+
+      <div *ngIf="!isLoading && filteredReports.length > 0" class="reports-table">
+        <table class="table table-hover" [class.with-patient]="currentRole() === 'DOCTOR'">
+          <colgroup>
+            <col class="col-title" />
+            <col class="col-type" />
+            <col class="col-patient" *ngIf="currentRole() === 'DOCTOR'" />
+            <col class="col-professional" />
+            <col class="col-status" />
+            <col class="col-date" />
+            <col class="col-actions" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="cell-title">Título</th>
+              <th class="cell-type">Tipo</th>
+              <th class="cell-person" *ngIf="currentRole() === 'DOCTOR'">Paciente</th>
+              <th class="cell-person">Profesional</th>
+              <th class="cell-status">Estado</th>
+              <th class="cell-date">Fecha Creación</th>
+              <th class="cell-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let report of paginatedReports"
+              [ngClass]="'status-' + report.status"
+            >
+              <td class="cell-title">
+                <strong>{{ report.title }}</strong>
+              </td>
+              <td class="cell-type">
+                <span class="badge bg-info">{{ report.reportTypeName }}</span>
+              </td>
+              <td class="cell-person" *ngIf="currentRole() === 'DOCTOR'">{{ report.patientName }}</td>
+              <td class="cell-person">{{ report.professionalName }}</td>
+              <td class="cell-status">
+                <span [ngClass]="'badge bg-' + getStatusColor(report.status)">
+                  {{ getStatusLabel(report.status) }}
+                </span>
+              </td>
+              <td class="cell-date">{{ report.createdAt | date: "short" }}</td>
+              <td class="cell-actions">
+                <button
+                  class="btn btn-sm btn-info"
+                  (click)="viewReport(report.id)"
+                  title="Ver informe"
+                >
+                  👁️ Ver
+                </button>
+                <button
+                  *ngIf="report.pdfUrl"
+                  class="btn btn-sm btn-success"
+                  (click)="downloadPDF(report.id)"
+                  title="Descargar PDF"
+                >
+                  ⬇️ PDF
+                </button>
+                <button
+                  *ngIf="report.status === 'signed'"
+                  class="btn btn-sm btn-secondary"
+                  (click)="viewAudit(report.id)"
+                  title="Ver auditoría"
+                >
+                  📋 Auditoría
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <nav class="pagination" aria-label="Paginación de informes" *ngIf="totalPages > 1">
+          <button type="button" class="btn btn-light" (click)="previousPage()" [disabled]="currentPage === 1">
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="btn btn-light"
+            *ngFor="let page of [].constructor(totalPages); let i = index"
+            [class.active]="currentPage === i + 1"
+            (click)="goToPage(i + 1)"
+          >
+            {{ i + 1 }}
+          </button>
+          <button type="button" class="btn btn-light" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            Siguiente
+          </button>
+        </nav>
+      </div>
+
+      <div *ngIf="!isLoading && reports.length === 0" class="alert alert-info">
+        No hay informes disponibles.
+      </div>
+
+      <div *ngIf="!isLoading && reports.length > 0 && filteredReports.length === 0" class="alert alert-info">
+        No hay informes que coincidan con los filtros.
+      </div>
+    </div>

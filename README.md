@@ -1,178 +1,315 @@
-# AutoMed - Platform de Telemedicina
+# AutoMed
 
-Plataforma completa de telemedicina con gestión de consultas, documentos médicos, medicación y IA para análisis temprano de riesgos.
+AutoMed es una aplicación web de telemedicina para la gestión de pacientes, profesionales sanitarios, citas médicas, planes de medicación, hábitos de salud, teleconsultas, informes médicos firmados y auditoría de accesos.
 
-## 📋 Estructura del Proyecto
+La aplicación está separada en dos partes:
 
-```
+- `backend`: API REST con Node.js, Express, TypeScript, MySQL, JWT y Socket.IO.
+- `frontend`: aplicación Angular con módulos para pacientes, profesionales y administración.
+
+## Funcionalidades
+
+- Autenticación con roles: `PACIENTE`, `DOCTOR` y `ADMIN`.
+- Calendario de citas médicas y medicación.
+- Registro y seguimiento de hábitos de salud.
+- Evolución del paciente con visualización de datos clínicos.
+- Teleconsulta con mensajería en tiempo real.
+- Gestión de informes médicos, firma digital y descarga de PDF.
+- Módulo profesional para seguimiento de pacientes.
+- Módulo administrador con pacientes, catálogo y control de logs.
+- Auditoría de accesos a informes médicos.
+
+## Requisitos
+
+- Node.js 20 LTS recomendado.
+- npm.
+- MySQL 8.
+- Angular CLI, opcional para trabajar con comandos globales.
+
+El proyecto puede compilar con otras versiones recientes de Node, aunque Node impar puede mostrar avisos por no ser LTS.
+
+## Estructura
+
+```text
 autoMed/
-├── backend/                    # API REST (Node.js + Express + TypeScript)
-│   ├── src/
-│   │   ├── config/            # Configuración de BD, autenticación
-│   │   ├── controllers/       # Controladores HTTP
-│   │   ├── services/          # Lógica empresarial
-│   │   ├── models/            # DTOs y tipos de entidades
-│   │   ├── routes/            # Definición de rutas
-│   │   ├── middleware/        # Auth, validación, errores
-│   │   ├── validators/        # Validación de datos
-│   │   ├── types/             # Tipos TypeScript globales
-│   │   ├── utils/             # Funciones auxiliares
-│   │   ├── helpers/           # Ayudantes genéricos
-│   │   ├── errors/            # Clases de error personalizadas
-│   │   ├── db/                # Conexión y migraciones
-│   │   └── index.ts           # Punto de entrada
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── .env.example
-│
-├── frontend/                   # Aplicación Angular
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── core/
-│   │   │   │   ├── services/  # Servicios globales (Auth, API)
-│   │   │   │   ├── guards/    # Guards (AuthGuard, RoleGuard)
-│   │   │   │   └── interceptors/ # HTTP Interceptors
-│   │   │   ├── shared/
-│   │   │   │   ├── components/   # Componentes reutilizables
-│   │   │   │   ├── directives/   # Directivas personalizadas
-│   │   │   │   ├── pipes/        # Pipes personalizados
-│   │   │   │   └── models/       # Interfaces compartidas
-│   │   │   ├── features/      # Módulos por funcionalidad
-│   │   │   │   ├── auth/      # Login, Registro
-│   │   │   │   ├── patients/  # Panel de pacientes
-│   │   │   │   ├── professionals/ # Panel de profesionales
-│   │   │   │   ├── consultations/ # Teleconsultas
-│   │   │   │   ├── documents/ # Gestión de documentos
-│   │   │   │   ├── reports/   # Reportes PDF
-│   │   │   │   ├── medications/ # Gestión de medicación
-│   │   │   │   └── admin/     # Panel administrativo
-│   │   │   └── app.component.ts
-│   │   ├── assets/
-│   │   ├── environments/      # Configuración por entorno
-│   │   ├── styles.scss        # Estilos globales
-│   │   ├── main.ts
-│   │   └── index.html
-│   ├── angular.json
-│   ├── tsconfig.json
-│   ├── package.json
-│   └── .env.example
-│
+├── backend/                 API Express + TypeScript
+├── frontend/                Aplicación Angular
 ├── bd/
-│   └── db_script.sql          # Script de creación de BD
-│
+│   ├── structure/           Script base de base de datos
+│   └── data/                Migraciones incrementales
+├── storage/                 Ficheros generados: reportes y firmas
+├── init.sh                  Instalación inicial de dependencias
 └── README.md
 ```
 
-## 🔧 Tecnologías Utilizadas
+## Instalación rápida
+
+Desde la raíz del proyecto:
+
+```bash
+chmod +x init.sh
+./init.sh
+```
+
+El script instala dependencias de backend y frontend y crea los `.env` desde los ejemplos.
+
+## Configuración
 
 ### Backend
-- **Node.js** con **Express.js**
-- **TypeScript** para tipado estático
-- **MySQL 8.x** para almacenamiento
-- **JWT** para autenticación
-- **Socket.io** para comunicación en tiempo real (consultas)
-- **Multer** para carga de archivos
+
+Edita `backend/.env`:
+
+```env
+NODE_ENV=development
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=telemedicina_tfg
+
+JWT_SECRET=cambia_este_valor
+JWT_EXPIRY=7d
+
+CORS_ORIGIN=http://localhost:4200
+```
 
 ### Frontend
-- **Angular 17+** (framework)
-- **TypeScript** para componentes
-- **NgRx** para gestión de estado
-- **Angular Material** para UI
-- **RxJS** para programación reactiva
-- **Socket.io-client** para WebSocket
 
-## 🚀 Primeros Pasos
+Edita `frontend/.env` si necesitas cambiar la URL de la API:
 
-### Instalación Backend
+```env
+NG_APP_API_URL=http://localhost:3000/api
+NG_APP_ENV=development
+NG_APP_LOG_LEVEL=debug
+```
+
+## Base de datos
+
+### Crear la base desde cero
+
+Desde la raíz del proyecto:
+
+```bash
+mysql -u root -p < bd/structure/db_script.sql
+```
+
+Si el script no crea la base en tu instalación, crea primero la base y luego importa:
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS telemedicina_tfg CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p telemedicina_tfg < bd/structure/db_script.sql
+```
+
+### Aplicar migraciones
+
+Después del script base, aplica los scripts incrementales de `bd/data` en orden:
+
+```bash
+mysql -u root -p telemedicina_tfg < bd/data/202605011242_add_roles.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605151030_add_reports_module.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605151100_add_reports_module_v2.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605151130_make_report_consultation_optional.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605161200_add_teleconsultation_module.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605221545_add_medication_alarm_end_date.sql
+```
+
+Para comprobar una columna o tabla:
+
+```bash
+mysql -u root -p telemedicina_tfg -e "SHOW TABLES;"
+mysql -u root -p telemedicina_tfg -e "DESCRIBE medication_alarms;"
+```
+
+## Ejecutar en desarrollo
+
+Abre dos terminales.
+
+Backend:
 
 ```bash
 cd backend
-cp .env.example .env          # Configurar variables de entorno
 npm install
-npm run build
-npm run dev                    # Desarrollo con ts-node
+npm run dev
 ```
 
-### Instalación Frontend
+La API queda disponible en:
+
+```text
+http://localhost:3000/api
+```
+
+Frontend:
 
 ```bash
 cd frontend
-cp .env.example .env
 npm install
-npm start                      # ng serve en puerto 4200
+npm start
 ```
 
-### Base de Datos
+La aplicación queda disponible en:
+
+```text
+http://localhost:4200
+```
+
+## Compilar
+
+Backend:
 
 ```bash
-# Crear la BD desde el script
-mysql -u root -p < bd/db_script.sql
+cd backend
+npm run build
 ```
 
-## 📦 Estructura de Carpetas - Convenciones
+Ejecutar backend compilado:
 
-### Backend (src/)
-- **config/**: Variables de entorno, conexión BD
-- **controllers/**: Manejadores de requests HTTP
-- **services/**: Lógica de negocio (acceso a BD, cálculos, etc)
-- **models/**: DTOs, interfaces, tipos de entidades
-- **routes/**: Definición de rutas Express
-- **middleware/**: Auth, validación, manejo de errores
-- **validators/**: Validadores con express-validator
-- **types/**: Tipos globales de TypeScript
-- **utils/**: Funciones auxiliares reutilizables
-- **helpers/**: Métodos helper específicos de dominio
-- **errors/**: Clases de error personalizadas
-- **db/**: Conexión a MySQL, migraciones
+```bash
+cd backend
+npm start
+```
 
-### Frontend (src/app/)
-- **core/**: Servicios singleton, guards, interceptors
-- **shared/**: Componentes, pipes, directivas reutilizables
-- **features/**: Módulos por funcionalidad (lazy loaded)
-  - Cada feature puede tener: components/, services/, models/, guards/
+Frontend:
 
-## 🔐 Seguridad
+```bash
+cd frontend
+npm run build
+```
 
-- JWT para autenticación
-- CORS configurado
-- Helmet para headers de seguridad
-- Validación de entrada en backend
-- Encriptación de contraseñas con bcryptjs
-- Logs de acceso a datos sensibles
+Build de producción:
 
-## 📊 Funcionalidades Principales
+```bash
+cd frontend
+npm run build:prod
+```
 
-1. **Autenticación y Autorización**
-   - Roles: Paciente, Profesional, Admin
+## Tests
 
-2. **Gestión de Perfiles**
-   - Perfil de paciente (historial, documentos)
-   - Perfil de profesional (especialidades, licencia)
+Backend:
 
-3. **Teleconsultas**
-   - Chat en tiempo real
-   - Video conferencia
-   - Historial de consultas
+```bash
+cd backend
+npm test
+```
 
-4. **Documentos Médicos**
-   - Carga y almacenamiento
-   - Análisis con IA (clasificación, extracción de entidades)
+Frontend:
 
-5. **Medicación**
-   - Planes de medicación
-   - Recordatorios automáticos
+```bash
+cd frontend
+npm test
+```
 
-6. **Reportes**
-   - Generación de PDF con firma digital
+## Lint
 
-7. **Análisis de Riesgo**
-   - Evaluación temprana basada en hábitos y datos
-   - Recomendaciones personalizadas
+Backend:
 
-## 🤝 Contribuir
+```bash
+cd backend
+npm run lint
+```
 
-Para cualquier cambio en la estructura, por favor actualizar este README.
+Frontend:
 
-## 📝 Licencia
+```bash
+cd frontend
+npm run lint
+```
 
-ISC
+## Rutas principales
+
+Frontend:
+
+- `/`: página pública.
+- `/auth`: login y registro.
+- `/calendar`: calendario de citas y medicación.
+- `/habits`: registro de hábitos.
+- `/evolution`: evolución del paciente.
+- `/reports`: informes médicos.
+- `/teleconsulta`: teleconsulta.
+- `/professional/patients`: seguimiento profesional de pacientes.
+- `/admin/patients`: administración de pacientes.
+- `/admin/catalog`: catálogo.
+- `/admin/logs`: control de logs.
+
+Backend:
+
+- `/api/auth`
+- `/api/users`
+- `/api/appointments`
+- `/api/medications`
+- `/api/habits`
+- `/api/reports`
+- `/api/report-types`
+- `/api/teleconsultations`
+- `/api/patient-profiles`
+- `/api/professional-profiles`
+- `/api/admin`
+
+## Almacenamiento local
+
+El proyecto usa `storage/` para guardar ficheros generados por la aplicación, como:
+
+- PDFs de informes médicos.
+- Resúmenes de teleconsulta.
+- Imágenes de firmas digitales.
+
+No subas ficheros sensibles reales a repositorios públicos.
+
+## Seguridad
+
+- Las contraseñas se almacenan con hash `bcryptjs`.
+- La autenticación usa JWT.
+- El backend aplica CORS y Helmet.
+- El acceso a módulos depende del rol del usuario.
+- Los accesos a informes médicos se registran en auditoría.
+
+Antes de desplegar:
+
+- Cambia `JWT_SECRET`.
+- Usa credenciales de base de datos no privilegiadas.
+- Revisa `CORS_ORIGIN`.
+- No publiques `.env`.
+- Evita datos clínicos reales en entornos de prueba.
+
+## Solución de problemas
+
+### Error de conexión a MySQL
+
+Revisa `backend/.env` y comprueba que MySQL esté activo:
+
+```bash
+mysql -u root -p -e "SELECT 1;"
+```
+
+### Error de CORS
+
+Comprueba que `CORS_ORIGIN` en `backend/.env` coincide con la URL del frontend:
+
+```env
+CORS_ORIGIN=http://localhost:4200
+```
+
+### El frontend no llama a la API correcta
+
+Revisa `frontend/.env`:
+
+```env
+NG_APP_API_URL=http://localhost:3000/api
+```
+
+### Cambios de backend no aparecen
+
+Si ejecutas el backend compilado, vuelve a compilar:
+
+```bash
+cd backend
+npm run build
+npm start
+```
+
+## Derechos de autor
+
+Copyright © 2026 Carolina Fernández. Todos los derechos reservados.
+
+Este proyecto forma parte de AutoMed. Queda prohibida la copia, distribución, modificación o uso comercial sin autorización expresa de la titular de los derechos.

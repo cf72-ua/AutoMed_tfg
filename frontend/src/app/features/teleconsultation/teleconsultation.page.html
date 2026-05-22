@@ -1,0 +1,177 @@
+<div class="tele-page">
+  <header class="page-header">
+    <div class="hero-copy">
+      <h1>Teleconsulta</h1>
+      <p>Chat en tiempo real con historial clínico de la conversación.</p>
+    </div>
+    <div class="hero-ill"></div>
+  </header>
+
+  <div class="error-banner" *ngIf="error()">
+    <span>{{ error() }}</span>
+    <button type="button" (click)="error.set(null)" aria-label="Cerrar">×</button>
+  </div>
+
+  <section class="new-consultation" *ngIf="role() === 'PACIENTE'">
+    <select [(ngModel)]="selectedDoctorId" aria-label="Doctor">
+      <option [ngValue]="null">Selecciona doctor</option>
+      <option *ngFor="let doctor of doctors(); trackBy: trackById" [ngValue]="doctor.id">
+        {{ doctor.fullName }}
+      </option>
+    </select>
+    <input
+      type="text"
+      [(ngModel)]="newPurpose"
+      placeholder="Motivo de la consulta"
+      maxlength="255"
+    />
+    <button type="button" (click)="createConversation()" [disabled]="loading()">
+      Crear
+    </button>
+  </section>
+
+  <section class="meet-appointment" *ngIf="role() === 'DOCTOR'">
+    <div class="meet-title">
+      <strong>Crear cita con videochat</strong>
+      <span>Se generará una URL de reunión para el paciente.</span>
+    </div>
+
+    <select [(ngModel)]="meetPatientId" aria-label="Paciente">
+      <option [ngValue]="null">Selecciona paciente</option>
+      <option *ngFor="let patient of patients(); trackBy: trackById" [ngValue]="patient.id">
+        {{ patient.fullName }}
+      </option>
+    </select>
+
+    <input
+      type="text"
+      [(ngModel)]="meetTitle"
+      placeholder="Título de la cita"
+      maxlength="120"
+    />
+
+    <input type="date" [(ngModel)]="meetDate" aria-label="Fecha" />
+    <input type="time" [(ngModel)]="meetTime" aria-label="Hora" />
+
+    <input
+      type="text"
+      [(ngModel)]="meetNotes"
+      placeholder="Notas para el paciente"
+      maxlength="255"
+    />
+
+    <button
+      type="button"
+      (click)="createMeetAppointment()"
+      [disabled]="creatingMeetAppointment()"
+    >
+      {{ creatingMeetAppointment() ? 'Creando...' : 'Crear cita Meet' }}
+    </button>
+
+    <a
+      class="meet-link"
+      *ngIf="meetAppointmentUrl()"
+      [href]="meetAppointmentUrl()!"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Abrir videochat
+    </a>
+  </section>
+
+  <main class="consultation-shell">
+    <aside class="conversation-list">
+      <div class="list-header">
+        <strong>Conversaciones</strong>
+        <span>{{ conversations().length }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="conversation-item"
+        *ngFor="let conversation of conversations(); trackBy: trackById"
+        [class.active]="selectedConversation()?.id === conversation.id"
+        (click)="selectConversation(conversation)"
+      >
+        <span class="conversation-name">{{ conversationTitle(conversation) }}</span>
+        <span class="conversation-purpose">{{ conversation.purpose }}</span>
+        <span class="conversation-last">
+          {{ conversation.lastMessage || 'Sin mensajes todavía' }}
+        </span>
+      </button>
+
+      <div class="empty-list" *ngIf="!loading() && conversations().length === 0">
+        No tienes teleconsultas abiertas.
+      </div>
+    </aside>
+
+    <section class="chat-panel" *ngIf="selectedConversation(); else emptyChat">
+      <header class="chat-header">
+        <div>
+          <h2>{{ conversationTitle(selectedConversation()!) }}</h2>
+          <p>{{ selectedConversation()!.purpose }}</p>
+        </div>
+        <div class="chat-actions">
+          <button
+            type="button"
+            class="finish-button"
+            *ngIf="canCloseConversation()"
+            [disabled]="closing()"
+            (click)="closeConversation()"
+          >
+            Finalizar
+          </button>
+          <button
+            type="button"
+            class="summary-button"
+            *ngIf="canDownloadClinicalSummary()"
+            [disabled]="generatingSummary()"
+            (click)="downloadClinicalSummary()"
+          >
+            {{ generatingSummary() ? 'Generando...' : 'Resumen PDF' }}
+          </button>
+          <span class="status" [class.closed]="selectedConversation()!.status === 'closed'">
+            {{ selectedConversation()!.status }}
+          </span>
+        </div>
+      </header>
+
+      <div class="messages">
+        <div
+          class="message"
+          *ngFor="let message of messages(); trackBy: trackById"
+          [class.own]="isOwnMessage(message)"
+        >
+          <div class="message-meta">
+            <span>{{ message.senderName }}</span>
+            <time>{{ formatDate(message.createdAt) }}</time>
+          </div>
+          <p>{{ message.content }}</p>
+        </div>
+      </div>
+
+      <div class="closed-notice" *ngIf="!canWrite()">
+        Esta teleconsulta está finalizada. El historial queda disponible, pero el chat está cerrado.
+      </div>
+
+      <form class="composer" (ngSubmit)="send()" *ngIf="canWrite()">
+        <input
+          name="message"
+          type="text"
+          [(ngModel)]="newMessage"
+          placeholder="Escribe un mensaje"
+          autocomplete="off"
+        />
+        <button type="submit" [disabled]="sending() || !newMessage.trim()">
+          Enviar
+        </button>
+      </form>
+    </section>
+
+    <ng-template #emptyChat>
+      <section class="chat-panel empty-chat">
+        <h2>Selecciona una conversación</h2>
+      </section>
+    </ng-template>
+  </main>
+</div>

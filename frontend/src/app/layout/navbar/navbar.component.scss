@@ -3,14 +3,16 @@
   background: #fff;
   display: flex;
   align-items: center;
-  padding: 0 14px; /* logo más a la izquierda */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 0 14px; 
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    0 8px 20px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   position: relative;
   z-index: 100;
 }
 
-/* Logo */
+
 .brand {
   display: flex;
   align-items: center;
@@ -32,19 +34,19 @@
   width: auto;
   object-fit: contain;
   display: block;
-  transform: translateX(-32px) scale(2.55); /* <-- mueve a la izquierda */
+  transform: translateX(-32px) scale(2.55); 
   transform-origin: left center;
 }
 
-/* NUEVO: bloque derecho (links + botones / user) */
+
 .nav-right {
-  margin-left: auto; /* empuja todo a la derecha */
+  margin-left: auto; 
   display: flex;
   align-items: center;
-  gap: 22px; /* espacio entre links y botones */
+  gap: 22px; 
 }
 
-/* Links ahora van a la derecha */
+
 .links {
   display: flex;
   align-items: center;
@@ -52,7 +54,7 @@
 }
 
 .links a {
-  /* Igualar altura con botones */
+  
   height: 40px;
   display: inline-flex;
   align-items: center;
@@ -64,24 +66,24 @@
 
   position: relative;
 
-  /* Quitamos padding-bottom para que no desplace visualmente */
+  
   padding-bottom: 0;
   line-height: 1;
 }
 
-/* Subrayado sin afectar a la altura del link */
+
 .links a.active::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -6px;   /* baja el subrayado */
+  bottom: -6px; 
   height: 4px;
   background: #111;
   border-radius: 3px;
 }
 
-/* Botones MÁS PEQUEÑOS (como en tu imagen de referencia) */
+
 .cta {
   flex: 0 0 auto;
   display: flex;
@@ -94,12 +96,12 @@
   align-items: center;
   justify-content: center;
 
-  height: 40px;      /* antes 62 */
-  min-width: 152px;  /* antes 210 */
+  height: 40px; 
+  min-width: 152px; 
   padding: 0 16px;
 
   border-radius: 12px;
-  font-size: 20px;   /* antes 26 */
+  font-size: 20px; 
   font-weight: 900;
 
   color: #fff;
@@ -109,17 +111,21 @@
   box-shadow: 0 8px 14px rgba(0, 0, 0, 0.14);
 }
 
-.btn-green { background: #6ea14d; }
-.btn-blue { background: #4c79a8; }
+.btn-green {
+  background: #6ea14d;
+}
+.btn-blue {
+  background: #4c79a8;
+}
 
-/* Estado logueado */
+
 .logged {
   display: flex;
   align-items: center;
   gap: 26px;
 }
 
-/* icono campana */
+
 .icon-btn {
   width: 44px;
   height: 44px;
@@ -129,6 +135,41 @@
   place-items: center;
   cursor: pointer;
   color: #111;
+}
+
+.notification-link {
+  position: relative;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.notification-link.active,
+.notification-link:hover {
+  background: rgba(15, 75, 122, 0.08);
+  color: #0f4b7a;
+}
+
+.notification-link.has-alert {
+  color: #0f4b7a;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  padding: 0 4px;
+  background: #d64b28;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .nav-link {
@@ -177,13 +218,13 @@
   margin-left: 2px;
 }
 
-/* Dropdown */
+
 .dropdown {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
   background: #fff;
-  border: 1px solid rgba(17, 17, 17, 0.10);
+  border: 1px solid rgba(17, 17, 17, 0.1);
   border-radius: 12px;
   box-shadow: 0 18px 28px rgba(0, 0, 0, 0.14);
   padding: 8px;
@@ -194,35 +235,338 @@
 .dropdown-item {
   width: 100%;
   height: 44px;
+  display: flex;
+  align-items: center;
   border: none;
   border-radius: 10px;
   background: transparent;
   cursor: pointer;
+  color: #111;
   font-size: 16px;
   font-weight: 800;
   text-align: left;
   padding: 0 12px;
+  text-decoration: none;
 }
 
 .dropdown-item:hover {
   background: rgba(15, 75, 122, 0.08);
 }
 
-/* Cerrar al click fuera */
+
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 40;
 }
 
-/* Responsive */
-@media (max-width: 1000px) {
-  .links { gap: 30px; }
-  .links a { height: 48px; } /* para alinear con botones de 48px */
 
-  .btn { min-width: 150px; height: 48px; font-size: 18px; }
-  .brand-frame { width: 130px; height: 46px; }
-  .brand-logo { height: 46px; transform: translateX(-28px) scale(2.1); }
+
+.search-container {
+  position: relative;
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 8px;
+  background: #f8f8f8;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+  background: #f0f0f0;
+  border-color: rgba(17, 17, 17, 0.2);
+}
+
+.search-label {
+  flex: 1;
+  text-align: left;
+  color: #999;
+}
+
+.search-kbd {
+  font-size: 12px;
+  color: #aaa;
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+
+.search-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding-top: 80px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  animation: overlayFadeIn 0.15s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    background: rgba(0, 0, 0, 0);
+  }
+  to {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.search-content {
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+  margin: 0 16px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 12px 16px;
+  gap: 10px;
+}
+
+.search-icon {
+  color: #999;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+  color: #111;
+  padding: 0;
+
+  &::placeholder {
+    color: #ccc;
+  }
+}
+
+.search-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  font-size: 18px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #111;
+  }
+}
+
+
+.search-results {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  gap: 12px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.08);
+  }
+}
+
+.result-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(78, 121, 168, 0.1);
+  display: grid;
+  place-items: center;
+  color: #4e79a8;
+  flex-shrink: 0;
+}
+
+.result-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-category {
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-kbd {
+  font-size: 12px;
+  color: #ccc;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+
+.search-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+
+.search-hints {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.hint-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+
+.hint-item {
+  width: calc(100% - 16px);
+  margin: 0 8px 4px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.hint-item svg {
+  color: #999;
+  flex-shrink: 0;
+}
+
+
+.search-footer {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #999;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.footer-kbd {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #666;
+}
+
+
+@media (max-width: 1000px) {
+  .links {
+    gap: 30px;
+  }
+  .links a {
+    height: 48px;
+  } 
+
+  .btn {
+    min-width: 150px;
+    height: 48px;
+    font-size: 18px;
+  }
+  .brand-frame {
+    width: 130px;
+    height: 46px;
+  }
+  .brand-logo {
+    height: 46px;
+    transform: translateX(-28px) scale(2.1);
+  }
 }
 
 @media (max-width: 700px) {
@@ -231,7 +575,7 @@
     padding: 0 10px;
   }
 
-  /* Logo más compacto pero legible */
+  
   .brand-frame {
     width: 120px;
     height: 44px;
@@ -239,12 +583,12 @@
 
   .brand-logo {
     height: 44px;
-    /* mantén el “recorte” y escala adaptado a móvil */
+    
     transform: translateX(-24px) scale(2.1);
     transform-origin: left center;
   }
 
-  /* En móvil escondemos links (como ya haces) */
+  
   .links {
     display: none;
   }
@@ -257,7 +601,7 @@
     gap: 10px;
   }
 
-  /* Botones más pequeños */
+  
   .btn {
     min-width: 110px;
     height: 38px;
@@ -266,6 +610,10 @@
     border-radius: 10px;
   }
 
-  .logged { gap: 14px; }
-  .user-text { display: none; } /* deja solo el icono usuario + flecha */
+  .logged {
+    gap: 14px;
+  }
+  .user-text {
+    display: none;
+  } 
 }

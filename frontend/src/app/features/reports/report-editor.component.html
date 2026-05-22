@@ -1,0 +1,151 @@
+    <div class="editor-container">
+      <div class="editor-header">
+        <div>
+          <h2>{{ isEditing ? 'Editar Informe' : 'Crear Nuevo Informe' }}</h2>
+          <p>{{ isEditing ? 'Revisa el contenido del informe antes de firmarlo' : 'Completa los datos clínicos para generar un nuevo informe' }}</p>
+        </div>
+        <button class="btn btn-secondary" routerLink="../" title="Volver">← Volver</button>
+      </div>
+
+      <app-loading-spinner *ngIf="isLoading" [message]="'Cargando...'" ></app-loading-spinner>
+
+      <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="report-form">
+        <section class="form-section">
+          <div class="section-heading">
+            <h3>Datos principales</h3>
+          </div>
+
+          <div class="form-grid">
+            
+            <div class="form-group" *ngIf="!isEditing">
+              <label for="patient">Paciente *</label>
+              
+              
+              <div *ngIf="isPatientsLoading" class="loading-indicator">
+                Cargando pacientes...
+              </div>
+              
+              
+              <select 
+                id="patient" 
+                formControlName="patientId" 
+                class="form-control"
+                [disabled]="isPatientsLoading || patients.length === 0">
+                <option value="" disabled>
+                  {{ isPatientsLoading ? 'Cargando...' : patients.length === 0 ? 'No hay pacientes disponibles' : 'Selecciona un paciente' }}
+                </option>
+                <option *ngFor="let patient of patients" [value]="patient.id">
+                  {{ patient.fullName }} ({{ patient.dni }})
+                </option>
+              </select>
+              
+              
+              <div *ngIf="patientsError" class="error-message">
+                {{ patientsError }}
+              </div>
+            </div>
+
+            
+            <div class="form-group">
+              <label for="reportType">Tipo de Informe *</label>
+              <select id="reportType" formControlName="reportTypeId" class="form-control" 
+                [disabled]="isEditing">
+                <option value="" disabled>Selecciona un tipo</option>
+                <option *ngFor="let type of reportTypes" [value]="type.id">
+                  {{ type.name }}
+                </option>
+              </select>
+              <div class="form-text" *ngIf="selectedReportType">
+                {{ selectedReportType.description }}
+              </div>
+            </div>
+
+            
+            <div class="form-group form-group-wide">
+              <label for="title">Título del Informe *</label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                class="form-control"
+                placeholder="Ej: Informe de Follow-up"
+                required
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <h3>Contenido clínico</h3>
+          </div>
+
+          
+          <div class="form-group">
+            <label for="body">Contenido del Informe *</label>
+            <textarea
+              id="body"
+              formControlName="body"
+              class="form-control"
+              rows="12"
+              placeholder="Escribe el contenido del informe aquí..."
+              required
+            ></textarea>
+            <div class="form-text">
+              Puedes usar HTML básico para formatear el contenido.
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label for="metadata">Metadatos (JSON opcional)</label>
+            <textarea
+              id="metadata"
+              formControlName="metadata"
+              class="form-control metadata-control"
+              rows="4"
+              placeholder='{"key": "value"}'
+            ></textarea>
+          </div>
+        </section>
+
+        
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!reportForm.valid || isSaving"
+          >
+            {{ isSaving ? 'Guardando...' : 'Guardar Informe' }}
+          </button>
+          <button
+            *ngIf="isEditing && report?.status === 'draft'"
+            type="button"
+            class="btn btn-success"
+            (click)="onSign()"
+          >
+            ✓ Firmar y Generar PDF
+          </button>
+          <button type="button" class="btn btn-cancel" routerLink="../">
+            Cancelar
+          </button>
+        </div>
+
+        
+        <div *ngIf="report" class="report-status">
+          <p>
+            <strong>Estado:</strong>
+            <span [ngClass]="'badge bg-' + getStatusColor(report.status)">
+              {{ getStatusLabel(report.status) }}
+            </span>
+          </p>
+          <p *ngIf="report.signedAt">
+            <strong>Firmado:</strong> {{ report.signedAt | date: 'short' }}
+          </p>
+          <p *ngIf="report.pdfUrl">
+            <strong>PDF:</strong>
+            <a [href]="report.pdfUrl" target="_blank" class="link">Descargar</a>
+          </p>
+        </div>
+      </form>
+    </div>

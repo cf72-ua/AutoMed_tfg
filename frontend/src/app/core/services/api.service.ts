@@ -38,6 +38,19 @@ export class ApiService {
   }
 
   /**
+   * POST request para descargar binarios
+   */
+  postBlob(endpoint: string, body: any, options?: any): Observable<Blob> {
+    const headers = this.getHeaders();
+    const config = { ...options, headers, responseType: "blob" as const };
+    return this.http.post(
+      `${this.apiUrl}${endpoint}`,
+      body,
+      config,
+    ) as unknown as Observable<Blob>;
+  }
+
+  /**
    * PUT request
    */
   put<T>(endpoint: string, body: any, options?: any): Observable<T> {

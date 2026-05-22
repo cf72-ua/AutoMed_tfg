@@ -3,13 +3,14 @@
  */
 
 import { getDatabase } from "../db/connection";
+import { NutritionScoreService } from "./nutrition-score.service";
 
 export interface CreateHabitLogDto {
   patientId: number;
   habitType: "SLEEP" | "EXERCISE" | "NUTRITION" | "STRESS";
-  value: number;
+  value?: number;
   notes?: string;
-  loggedDate: string; // YYYY-MM-DD
+  loggedDate: string;
 }
 
 export interface HabitLogResponse {
@@ -58,7 +59,7 @@ export class HabitsService {
 
     try {
       const [habits]: any = await db.query(
-        `SELECT id, patient_id as patientId, habit_type as habitType, value, notes, logged_date as loggedDate, created_at as createdAt 
+        `SELECT id, patient_id as patientId, habit_type as habitType, value, notes, DATE_FORMAT(logged_date, '%Y-%m-%d') as loggedDate, created_at as createdAt 
          FROM habit_logs 
          WHERE patient_id = ? AND habit_type = ? AND logged_date >= ? AND logged_date <= ? 
          ORDER BY logged_date ASC`,
@@ -79,16 +80,29 @@ export class HabitsService {
     const db = getDatabase();
 
     try {
+      let value = dto.value;
+      let notes = dto.notes || null;
+
+      if (dto.habitType === "NUTRITION") {
+        const foodLog = dto.notes?.trim();
+        if (!foodLog) {
+          throw new Error("Describe lo que has comido durante el día");
+        }
+
+        const nutritionScore =
+          await NutritionScoreService.scoreDailyIntake(foodLog);
+        value = nutritionScore.score;
+        notes = `${foodLog}\n\nNutriscore IA: ${nutritionScore.score}/3. ${nutritionScore.rationale}`;
+      }
+
+      if (value === undefined || Number.isNaN(Number(value))) {
+        throw new Error("Valor de hábito inválido");
+      }
+
       const [result]: any = await db.query(
         `INSERT INTO habit_logs (patient_id, habit_type, value, notes, logged_date) 
          VALUES (?, ?, ?, ?, ?)`,
-        [
-          dto.patientId,
-          dto.habitType,
-          dto.value,
-          dto.notes || null,
-          dto.loggedDate,
-        ],
+        [dto.patientId, dto.habitType, value, notes, dto.loggedDate],
       );
 
       const habitId = result.insertId;
@@ -145,7 +159,6 @@ export class HabitsService {
         values,
       );
 
-      // Obtener y retornar el hábito actualizado
       const [habits]: any = await db.query(
         `SELECT id, patient_id as patientId, habit_type as habitType, value, notes, logged_date as loggedDate, created_at as createdAt 
          FROM habit_logs 

@@ -12,7 +12,6 @@
   border-radius: 10px;
   padding: 34px 28px 42px;
 
-  /* espacio para el logo grande */
   padding-top: 190px;
 
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -29,7 +28,7 @@
 }
 
 .brand-logo {
-  height: 280px;  /* ajusta si quieres como login */
+  height: 280px;
   width: auto;
   max-height: none;
   max-width: none;
@@ -54,7 +53,7 @@
   padding: 26px 26px 22px;
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
   position: relative;
-  z-index: 4; /* por encima de ilustraciones */
+  z-index: 4;
   border: 1px solid rgba(16, 65, 105, 0.18);
 }
 
@@ -98,7 +97,9 @@ form {
     padding: 0 14px 0 62px;
     font-size: 15px;
     outline: none;
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    transition:
+      box-shadow 0.15s ease,
+      border-color 0.15s ease;
 
     &::placeholder {
       color: #9aa3ad;
@@ -148,29 +149,28 @@ form {
   }
 }
 
-/* Personaje: nace desde el bottom del card azul y es MUCHO más grande */
 .illu-left {
   position: absolute;
-  left: -210px;      /* desplázala a la izquierda */
-  bottom: -130px;         /* <-- CLAVE: empieza desde el bottom del card azul */
-  width: 520px;      /* contenedor grande */
+  left: -210px;
+  bottom: -130px;
+  width: 520px;
   height: 460px;
   pointer-events: none;
-  z-index: 4;        /* por delante del form */
+  z-index: 4;
 
   .illu {
     position: absolute;
     left: 0;
-    bottom: 0;       /* pegada al bottom del contenedor (y del card) */
+    bottom: 0;
 
-    width: 420px;    /* tamaño base grande */
+    width: 420px;
     max-width: none;
     height: auto;
 
-    transform: scale(1.35);           /* agranda incluso si el PNG tiene mucho aire */
+    transform: scale(1.35);
     transform-origin: bottom left;
 
-    filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.20));
+    filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.2));
   }
 }
 
@@ -182,12 +182,16 @@ form {
   .register-card {
     width: min(520px, 96vw);
     padding: 22px 16px 28px;
-    padding-top: 125px; /* coherente con logo 170 */
+    padding-top: 125px;
     border-radius: 12px;
   }
 
-  .brand { top: -2px; }
-  .brand-logo { height: 170px; }
+  .brand {
+    top: -2px;
+  }
+  .brand-logo {
+    height: 170px;
+  }
 
   .title {
     font-size: 32px;
@@ -199,10 +203,9 @@ form {
     border-radius: 12px;
   }
 
-  /* 👇 CLAVE: replica el "efecto" de desktop */
   .illu-left {
-    left: -150px;      /* parecido al -210px en desktop, pero adaptado */
-    bottom: -105px;    /* <-- IMPORTANTÍSIMO: en desktop es -130px */
+    left: -150px;
+    bottom: -105px;
     width: 420px;
     height: 360px;
 

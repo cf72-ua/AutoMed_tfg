@@ -1,0 +1,178 @@
+<div class="notifications-page">
+  <header class="notifications-header">
+    <div>
+      <p class="eyebrow">Centro de alertas</p>
+      <h1>Notificaciones</h1>
+      <p class="header-copy">
+        Recordatorios de citas, medicación y mensajes pendientes de
+        teleconsulta.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="ghost-btn" (click)="refresh()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="primary-btn"
+        (click)="markAllAsRead()"
+        [disabled]="unreadCount() === 0"
+      >
+        Marcar todo leído
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-row" aria-label="Resumen de notificaciones">
+    <div class="summary-item">
+      <span>{{ notifications().length }}</span>
+      <small>Total</small>
+    </div>
+    <div class="summary-item warning">
+      <span>{{ unreadCount() }}</span>
+      <small>Sin leer</small>
+    </div>
+    <div class="summary-item">
+      <span>{{ filteredNotifications().length }}</span>
+      <small>Vista actual</small>
+    </div>
+  </section>
+
+  <nav class="filters" aria-label="Filtros">
+    <button
+      type="button"
+      [class.active]="activeFilter() === 'all'"
+      (click)="setFilter('all')"
+    >
+      Todas
+    </button>
+    <button
+      type="button"
+      [class.active]="activeFilter() === 'unread'"
+      (click)="setFilter('unread')"
+    >
+      Sin leer
+    </button>
+    <button
+      type="button"
+      [class.active]="activeFilter() === 'appointment'"
+      (click)="setFilter('appointment')"
+    >
+      Citas
+    </button>
+    <button
+      type="button"
+      [class.active]="activeFilter() === 'medication'"
+      (click)="setFilter('medication')"
+    >
+      Medicación
+    </button>
+    <button
+      type="button"
+      [class.active]="activeFilter() === 'message'"
+      (click)="setFilter('message')"
+    >
+      Mensajes
+    </button>
+  </nav>
+
+  <div class="status-card" *ngIf="notificationsService.loading()">
+    Cargando notificaciones...
+  </div>
+
+  <div class="status-card error" *ngIf="notificationsService.error()">
+    {{ notificationsService.error() }}
+  </div>
+
+  <section
+    class="notification-list"
+    *ngIf="!notificationsService.loading() && filteredNotifications().length > 0"
+  >
+    <button
+      type="button"
+      class="notification-item"
+      *ngFor="let notification of filteredNotifications(); trackBy: trackById"
+      [class.unread]="!notification.read"
+      [class.appointment]="notification.type === 'appointment'"
+      [class.medication]="notification.type === 'medication'"
+      [class.message]="notification.type === 'message'"
+      (click)="openNotification(notification)"
+    >
+      <span class="type-icon" aria-hidden="true">
+        <svg
+          *ngIf="notification.type === 'appointment'"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <path
+            fill="currentColor"
+            d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V9h14v10Z"
+          />
+        </svg>
+        <svg
+          *ngIf="notification.type === 'medication'"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <path
+            fill="currentColor"
+            d="M4.22 19.78a4.5 4.5 0 0 1 0-6.36l9.2-9.2a4.5 4.5 0 0 1 6.36 6.36l-9.2 9.2a4.5 4.5 0 0 1-6.36 0Zm7.78-9.2 1.42 1.42 4.95-4.95a2.5 2.5 0 0 0-3.54-3.54L9.88 8.46 12 10.58Z"
+          />
+        </svg>
+        <svg
+          *ngIf="notification.type === 'message'"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <path
+            fill="currentColor"
+            d="M4 4h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7l-5 4V6a2 2 0 0 1 2-2Zm1 3v10h15V7H5Z"
+          />
+        </svg>
+      </span>
+
+      <span class="notification-content">
+        <span class="item-topline">
+          <strong>{{ notification.title }}</strong>
+          <time>{{ notification.dateLabel }}</time>
+        </span>
+        <span class="item-body">{{ notification.body }}</span>
+      </span>
+
+      <span class="item-actions">
+        <span class="unread-dot" *ngIf="!notification.read"></span>
+        <button
+          type="button"
+          *ngIf="!notification.read"
+          class="read-btn"
+          (click)="markAsRead($event, notification)"
+        >
+          Leído
+        </button>
+      </span>
+    </button>
+  </section>
+
+  <section
+    class="empty-state"
+    *ngIf="!notificationsService.loading() && filteredNotifications().length === 0"
+  >
+    <div class="empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="34" height="34">
+        <path
+          fill="currentColor"
+          d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"
+        />
+      </svg>
+    </div>
+    <h2>No hay notificaciones</h2>
+    <p>
+      Cuando haya citas próximas, recordatorios o mensajes sin leer aparecerán
+      aquí.
+    </p>
+  </section>
+</div>

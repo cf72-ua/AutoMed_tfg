@@ -1,4 +1,4 @@
-/** 
+/**
  * Tipos globales para la aplicación
  */
 
@@ -19,15 +19,16 @@ export interface PaginatedResponse<T> {
 }
 
 export enum UserRole {
-  PACIENTE = 'PACIENTE',
-  PROFESIONAL = 'PROFESIONAL',
-  ADMIN = 'ADMIN'
+  PACIENTE = "PACIENTE",
+  DOCTOR = "DOCTOR",
+  ADMIN = "ADMIN",
 }
 
 export interface JwtPayload {
   userId: number;
   dni: string;
-  roles: UserRole[];
+  roles?: UserRole[];
+  role?: UserRole;
   iat?: number;
   exp?: number;
 }
