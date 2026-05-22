@@ -2,9 +2,97 @@
   <div class="admin-header">
     <h2>Catálogo</h2>
     <p>
-      Revisa los tipos, especialidades y categorías que estructuran los datos
-      clínicos.
+      Gestiona medicamentos, tipos de informes y ubicaciones para consultas.
     </p>
+  </div>
+
+  <form class="catalog-form" (ngSubmit)="saveCatalogItem()">
+    <div class="form-row">
+      <div class="filter-field">
+        <label for="catalogType">Tipo</label>
+        <select
+          id="catalogType"
+          class="form-select"
+          name="category"
+          [(ngModel)]="form.category"
+          [disabled]="!!editingItem"
+          (change)="startCreate(form.category)"
+        >
+          <option *ngFor="let option of catalogOptions" [value]="option.key">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label for="catalogName">Nombre</label>
+        <input
+          id="catalogName"
+          class="form-control"
+          name="name"
+          type="text"
+          placeholder="Nombre"
+          [(ngModel)]="form.name"
+          required
+        />
+      </div>
+
+      <div class="filter-field" *ngIf="form.category === 'report-types'">
+        <label for="catalogTemplate">Plantilla</label>
+        <input
+          id="catalogTemplate"
+          class="form-control"
+          name="detail"
+          type="text"
+          placeholder="plantilla.hbs"
+          [(ngModel)]="form.detail"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="filter-field description-field">
+        <label for="catalogDescription">Descripción</label>
+        <input
+          id="catalogDescription"
+          class="form-control"
+          name="description"
+          type="text"
+          placeholder="Descripción"
+          [(ngModel)]="form.description"
+        />
+      </div>
+
+      <div class="filter-field" *ngIf="form.category === 'report-types'">
+        <label for="catalogRequiredFields">Campos requeridos</label>
+        <input
+          id="catalogRequiredFields"
+          class="form-control"
+          name="requiredFields"
+          type="text"
+          placeholder="title, body"
+          [(ngModel)]="form.requiredFieldsText"
+        />
+      </div>
+
+      <button class="clear-btn" type="submit" [disabled]="isSaving">
+        {{ editingItem ? "Guardar cambios" : "Añadir" }}
+      </button>
+
+      <button
+        class="secondary-btn"
+        type="button"
+        *ngIf="editingItem"
+        (click)="cancelEdit()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
   </div>
 
   <div class="filters-section">
@@ -14,7 +102,7 @@
         id="catalogSearch"
         class="form-control"
         type="search"
-        placeholder="Buscar por nombre, slug o descripción"
+        placeholder="Buscar por nombre o descripción"
         [(ngModel)]="searchText"
         (ngModelChange)="onFilterChange()"
       />
@@ -48,28 +136,39 @@
   <div *ngIf="!isLoading && filteredItems.length > 0" class="admin-table">
     <table class="table">
       <colgroup>
-        <col style="width: 18%" />
-        <col style="width: 24%" />
-        <col style="width: 18%" />
-        <col style="width: 26%" />
-        <col style="width: 14%" />
+        <col style="width: 15%" />
+        <col style="width: 25%" />
+        <col style="width: 35%" />
+        <col style="width: 8%" />
+        <col style="width: 17%" />
       </colgroup>
       <thead>
         <tr>
           <th>Categoría</th>
           <th>Nombre</th>
-          <th>Slug / plantilla</th>
           <th>Descripción</th>
           <th class="cell-center">ID</th>
+          <th class="cell-right">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of paginatedItems">
           <td><span class="badge badge-blue">{{ item.category }}</span></td>
           <td><strong>{{ item.name }}</strong></td>
-          <td>{{ item.slug || item.detail || "Sin dato" }}</td>
           <td>{{ item.description || "Sin descripción" }}</td>
           <td class="cell-center">{{ item.id }}</td>
+          <td class="cell-right">
+            <button class="table-btn" type="button" (click)="startEdit(item)">
+              Modificar
+            </button>
+            <button
+              class="table-btn danger"
+              type="button"
+              (click)="deleteCatalogItem(item)"
+            >
+              Eliminar
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -89,11 +188,13 @@
     </button>
     <button
       type="button"
-      *ngFor="let page of [].constructor(totalPages); let i = index"
-      [class.active]="currentPage === i + 1"
-      (click)="goToPage(i + 1)"
+      *ngFor="let page of visiblePages"
+      [class.active]="page === currentPage"
+      [class.pagination-ellipsis]="page === '...'"
+      [disabled]="page === '...'"
+      (click)="page !== '...' && goToPage(page)"
     >
-      {{ i + 1 }}
+      {{ page }}
     </button>
     <button
       type="button"

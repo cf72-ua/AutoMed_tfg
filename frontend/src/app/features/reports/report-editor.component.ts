@@ -58,7 +58,7 @@ export class ReportEditorComponent implements OnInit {
       reportTypeId: ["", Validators.required],
       title: ["", [Validators.required, Validators.minLength(5)]],
       body: ["", [Validators.required, Validators.minLength(20)]],
-      metadata: [""],
+      observations: [""],
     });
   }
 
@@ -103,25 +103,19 @@ export class ReportEditorComponent implements OnInit {
   }
 
   loadReportTypes(): void {
-    
-    this.reportTypes = [
-      {
-        id: 1,
-        name: "Informe de Consulta",
-        slug: "consultation-report",
-        description: "Informe estándar de consulta médica",
-        templateName: "consultation-report.hbs",
-        requiredFields: ["title", "diagnosis", "treatment_plan"],
+    this.reportsService.getReportTypes().subscribe({
+      next: (types) => {
+        this.reportTypes = types;
+        this.updateSelectedReportType(this.reportForm.value.reportTypeId);
       },
-      {
-        id: 2,
-        name: "Receta/Plan de Medicación",
-        slug: "medication-plan",
-        description: "Prescripción de medicamentos",
-        templateName: "medication-plan.hbs",
-        requiredFields: ["title", "medications", "duration"],
+      error: (error) => {
+        console.error("Error loading report types:", error);
       },
-    ];
+    });
+
+    this.reportForm.get("reportTypeId")?.valueChanges.subscribe((typeId) => {
+      this.updateSelectedReportType(typeId);
+    });
   }
 
   checkEditMode(): void {
@@ -158,12 +152,17 @@ export class ReportEditorComponent implements OnInit {
       reportTypeId: report.reportTypeId,
       title: report.title,
       body: report.body,
-      metadata: report.metadata ? JSON.stringify(report.metadata) : "",
+      observations: report.metadata?.["observations"] || "",
     });
 
     const typeId = report.reportTypeId;
+    this.updateSelectedReportType(typeId);
+  }
+
+  private updateSelectedReportType(typeId: string | number | null): void {
+    const numericTypeId = Number(typeId);
     this.selectedReportType =
-      this.reportTypes.find((t) => t.id === typeId) || null;
+      this.reportTypes.find((type) => type.id === numericTypeId) || null;
   }
 
   onSubmit(): void {
@@ -172,12 +171,7 @@ export class ReportEditorComponent implements OnInit {
     this.isSaving = true;
     const selectedPatientId = this.reportForm.value.patientId;
 
-    const formData = {
-      ...this.reportForm.value,
-      metadata: this.reportForm.value.metadata
-        ? JSON.parse(this.reportForm.value.metadata)
-        : null,
-    };
+    const formData = this.reportForm.value;
 
     const request$ =
       this.isEditing && this.reportId

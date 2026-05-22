@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -11,7 +12,8 @@ describe('LoginComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['login']);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['login', 'getRole']);
+    authService.getRole.and.returnValue(signal('PACIENTE'));
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
@@ -69,6 +71,18 @@ describe('LoginComponent', () => {
 
     expect(authService.login).toHaveBeenCalledWith('12345678A', 'secret');
     expect(router.navigate).toHaveBeenCalledWith(['/calendar']);
+    expect(component.isSubmitting).toBeFalse();
+  });
+
+  it('navega a pacientes admin si el usuario es administrador', () => {
+    authService.getRole.and.returnValue(signal('ADMIN'));
+    authService.login.and.returnValue(of({ token: 'token' }));
+    component.dni = '12345678A';
+    component.password = 'secret';
+
+    component.onSubmit();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/patients']);
     expect(component.isSubmitting).toBeFalse();
   });
 

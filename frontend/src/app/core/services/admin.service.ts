@@ -19,13 +19,28 @@ export interface AdminPatient {
 }
 
 export interface AdminCatalogItem {
+  categoryKey: AdminCatalogCategory;
   category: string;
   id: number;
   name: string;
   slug?: string;
   description?: string;
   detail?: string;
+  requiredFields?: string[];
   createdAt?: string;
+}
+
+export type AdminCatalogCategory =
+  | "medications"
+  | "report-types"
+  | "locations";
+
+export interface AdminCatalogPayload {
+  name: string;
+  slug?: string;
+  description?: string;
+  detail?: string;
+  requiredFields?: string[];
 }
 
 export interface AdminLogEntry {
@@ -54,6 +69,36 @@ export class AdminService {
 
   getCatalog(): Observable<AdminCatalogItem[]> {
     return this.api.get<AdminCatalogItem[]>(`${this.endpoint}/catalog`);
+  }
+
+  createCatalogItem(
+    category: AdminCatalogCategory,
+    payload: AdminCatalogPayload,
+  ): Observable<AdminCatalogItem> {
+    return this.api.post<AdminCatalogItem>(
+      `${this.endpoint}/catalog/${category}`,
+      payload,
+    );
+  }
+
+  updateCatalogItem(
+    category: AdminCatalogCategory,
+    itemId: number,
+    payload: AdminCatalogPayload,
+  ): Observable<AdminCatalogItem> {
+    return this.api.put<AdminCatalogItem>(
+      `${this.endpoint}/catalog/${category}/${itemId}`,
+      payload,
+    );
+  }
+
+  deleteCatalogItem(
+    category: AdminCatalogCategory,
+    itemId: number,
+  ): Observable<{ message: string }> {
+    return this.api.delete<{ message: string }>(
+      `${this.endpoint}/catalog/${category}/${itemId}`,
+    );
   }
 
   getLogs(action = ""): Observable<AdminLogEntry[]> {

@@ -73,12 +73,14 @@ export interface CreateReportDTO {
   title: string;
   body: string;
   consultationId?: number;
+  observations?: string;
   metadata?: Record<string, unknown>;
 }
 
 export interface UpdateReportDTO {
   title?: string;
   body?: string;
+  observations?: string;
   metadata?: Record<string, unknown>;
 }
 

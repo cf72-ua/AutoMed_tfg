@@ -48,6 +48,10 @@ export class AdminPatientsPage implements OnInit {
     return this.filteredPatients.slice(start, start + this.pageSize);
   }
 
+  get visiblePages(): Array<number | "..."> {
+    return this.buildVisiblePages();
+  }
+
   loadPatients(): void {
     this.isLoading = true;
     this.adminService.getPatients().subscribe({
@@ -83,6 +87,29 @@ export class AdminPatientsPage implements OnInit {
 
   goToPage(page: number): void {
     this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
+  }
+
+  private buildVisiblePages(): Array<number | "..."> {
+    if (this.totalPages <= 5) {
+      return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = new Set<number>([
+      1,
+      this.totalPages,
+      this.currentPage,
+      this.currentPage - 1,
+      this.currentPage + 1,
+    ]);
+
+    const sortedPages = Array.from(pages)
+      .filter((page) => page >= 1 && page <= this.totalPages)
+      .sort((a, b) => a - b);
+
+    return sortedPages.flatMap((page, index) => {
+      const previous = sortedPages[index - 1];
+      return previous && page - previous > 1 ? ["..." as const, page] : [page];
+    });
   }
 
   private normalize(value: string | null | undefined): string {

@@ -13,6 +13,7 @@ import {
 } from "../models/report.dto";
 import { PDFGenerationService } from "./pdf-generation.service";
 import { ReportAuditService } from "./report-audit.service";
+import { ReportMetadataExtractionService } from "./report-metadata-extraction.service";
 import crypto from "crypto";
 
 export class ReportService {
@@ -21,6 +22,7 @@ export class ReportService {
   }
   private pdfService = new PDFGenerationService();
   private auditService = new ReportAuditService();
+  private metadataExtractor = new ReportMetadataExtractionService();
 
   /**
    * Crear un nuevo informe en estado DRAFT
@@ -41,6 +43,16 @@ export class ReportService {
         );
       }
 
+      const reportType = await this.getReportTypeById(dto.reportTypeId);
+      const metadata =
+        dto.metadata ||
+        (await this.metadataExtractor.extract({
+          reportTypeName: reportType?.name,
+          title: dto.title,
+          body: dto.body,
+          observations: dto.observations,
+        }));
+
       const [result] = await connection.query(
         `INSERT INTO medical_reports 
         (report_type_id, patient_id, professional_id, consultation_id, title, body, metadata, status)
@@ -52,7 +64,7 @@ export class ReportService {
           dto.consultationId || null,
           dto.title,
           dto.body,
-          dto.metadata ? JSON.stringify(dto.metadata) : null,
+          metadata ? JSON.stringify(metadata) : null,
         ],
       );
 
@@ -143,9 +155,27 @@ export class ReportService {
         updateFields.push("body = ?");
         values.push(dto.body);
       }
-      if (dto.metadata !== undefined) {
+      if (
+        dto.metadata !== undefined ||
+        dto.observations !== undefined ||
+        dto.body !== undefined ||
+        dto.title !== undefined
+      ) {
+        const reportType = await this.getReportTypeById(report.reportTypeId);
+        const metadata =
+          dto.metadata ||
+          (await this.metadataExtractor.extract({
+            reportTypeName: reportType?.name || report.reportTypeName,
+            title: dto.title ?? report.title,
+            body: dto.body ?? report.body,
+            observations:
+              dto.observations ??
+              (report.metadata?.observations
+                ? String(report.metadata.observations)
+                : ""),
+          }));
         updateFields.push("metadata = ?");
-        values.push(JSON.stringify(dto.metadata));
+        values.push(JSON.stringify(metadata));
       }
 
       if (updateFields.length === 0) {
@@ -545,6 +575,22 @@ export class ReportService {
     }
   }
 
+  private async getReportTypeById(reportTypeId: number) {
+    const connection = await this.db.getConnection();
+    try {
+      const [rows] = await connection.query(
+        `SELECT id, name, slug, description, template_name, required_fields
+        FROM report_types
+        WHERE id = ?`,
+        [reportTypeId],
+      );
+
+      return (rows as any[])[0] || null;
+    } finally {
+      connection.release();
+    }
+  }
+
   /**
    * Crear revisión (snapshot de cambios)
    */
@@ -678,7 +724,7 @@ export class ReportService {
       consultationId: row.consultation_id,
       title: row.title,
       body: row.body,
-      metadata: row.metadata ? JSON.parse(row.metadata) : null,
+      metadata: this.parseJsonColumn(row.metadata),
       status: row.status,
       signatureId: row.signature_id,
       signedAt: row.signed_at,
@@ -688,5 +734,17 @@ export class ReportService {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
+  }
+
+  private parseJsonColumn(value: unknown): Record<string, any> | null {
+    if (!value) return null;
+    if (typeof value === "object") return value as Record<string, any>;
+    if (typeof value !== "string") return null;
+
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
   }
 }

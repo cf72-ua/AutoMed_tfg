@@ -12,6 +12,20 @@ const router: Router = express.Router();
 const medicationsService = new MedicationsService();
 
 /**
+ * GET /api/medications/catalog
+ * Obtener medicamentos disponibles del catálogo administrado
+ */
+router.get("/catalog", async (_req: Request, res: Response) => {
+  try {
+    const medications = await medicationsService.listMedicationCatalog();
+    res.json(medications);
+  } catch (error) {
+    console.error("Error in GET /medications/catalog", error);
+    res.status(500).json({ error: "Failed to fetch medication catalog" });
+  }
+});
+
+/**
  * GET /api/medications/:patientId
  * Obtener todas las alarmas de medicación de un paciente
  */

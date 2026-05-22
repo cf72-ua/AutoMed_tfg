@@ -14,6 +14,12 @@ export interface MedicationAlarm {
   createdAt?: Date;
 }
 
+export interface MedicationCatalogItem {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -21,6 +27,15 @@ export class MedicationsService {
   private endpoint = "/medications";
 
   constructor(private apiService: ApiService) {}
+
+  /**
+   * Get medication options managed by admins
+   */
+  getMedicationCatalog(): Observable<MedicationCatalogItem[]> {
+    return this.apiService.get<MedicationCatalogItem[]>(
+      `${this.endpoint}/catalog`,
+    );
+  }
 
   /**
    * Get all medication alarms for a patient

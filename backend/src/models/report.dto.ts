@@ -6,6 +6,7 @@ export interface CreateReportDTO {
   reportTypeId: number;
   title: string;
   body: string;
+  observations?: string;
   metadata?: Record<string, any>;
   consultationId?: number;
 }
@@ -13,6 +14,7 @@ export interface CreateReportDTO {
 export interface UpdateReportDTO {
   title?: string;
   body?: string;
+  observations?: string;
   metadata?: Record<string, any>;
 }
 

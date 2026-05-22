@@ -98,14 +98,17 @@
 
           
           <div class="form-group">
-            <label for="metadata">Metadatos (JSON opcional)</label>
+            <label for="observations">Observaciones</label>
             <textarea
-              id="metadata"
-              formControlName="metadata"
-              class="form-control metadata-control"
+              id="observations"
+              formControlName="observations"
+              class="form-control observations-control"
               rows="4"
-              placeholder='{"key": "value"}'
+              placeholder="Añade notas internas o contexto adicional para la interpretación del informe"
             ></textarea>
+            <div class="form-text">
+              La IA extraerá los campos clínicos importantes desde el contenido del informe.
+            </div>
           </div>
         </section>
 

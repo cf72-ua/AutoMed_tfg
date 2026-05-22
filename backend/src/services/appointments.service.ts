@@ -26,6 +26,12 @@ export interface AppointmentResponse {
   createdAt: Date;
 }
 
+export interface AppointmentLocationResponse {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
 export class AppointmentsService {
   private readonly appointmentSelect = `
     SELECT
@@ -40,6 +46,26 @@ export class AppointmentsService {
       created_at as createdAt
     FROM appointments
   `;
+
+  /**
+   * Obtener catálogo de ubicaciones administrables
+   */
+  async listAppointmentLocations(): Promise<AppointmentLocationResponse[]> {
+    const db = getDatabase();
+
+    try {
+      const [locations]: any = await db.query(
+        `SELECT id, name, description
+         FROM appointment_locations
+         ORDER BY name ASC`,
+      );
+
+      return locations || [];
+    } catch (error) {
+      console.error("Error getting appointment locations:", error);
+      throw error;
+    }
+  }
 
   /**
    * Obtener todas las citas de un paciente

@@ -40,7 +40,11 @@ export class LoginComponent {
       .subscribe({
         next: () => {
           this.isSubmitting = false;
-          this.router.navigate(["/calendar"]);
+          const destination =
+            this.authService.getRole()() === "ADMIN"
+              ? "/admin/patients"
+              : "/calendar";
+          this.router.navigate([destination]);
         },
         error: (err) => {
           console.error("Login error", err);

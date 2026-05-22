@@ -138,7 +138,7 @@ export class PDFGenerationService {
           ? new Date(report.signed_at).toLocaleDateString("es-ES")
           : null,
         body: report.body,
-        metadata: report.metadata ? JSON.parse(report.metadata) : {},
+        metadata: this.parseJsonColumn(report.metadata),
         patient: {
           name: report.patient_name,
         },
@@ -175,6 +175,18 @@ export class PDFGenerationService {
     }
 
     return fs.readFileSync(templatePath, "utf-8");
+  }
+
+  private parseJsonColumn(value: unknown): Record<string, any> {
+    if (!value) return {};
+    if (typeof value === "object") return value as Record<string, any>;
+    if (typeof value !== "string") return {};
+
+    try {
+      return JSON.parse(value);
+    } catch {
+      return {};
+    }
   }
 
   /**

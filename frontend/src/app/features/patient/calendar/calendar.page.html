@@ -292,11 +292,17 @@
       </div>
       <div class="form-group">
         <label>Lugar</label>
-        <input
-          type="text"
-          placeholder="Ej: Consultorio 101"
+        <select
           [(ngModel)]="appointmentForm()['place']"
-        />
+        >
+          <option value="">Selecciona una ubicación</option>
+          <option
+            *ngFor="let location of appointmentLocations()"
+            [value]="location.name"
+          >
+            {{ location.name }}
+          </option>
+        </select>
       </div>
       <div class="form-group">
         <label>Notas</label>
@@ -355,12 +361,18 @@
 
       <div class="form-group">
         <label>Nombre de la Medicación *</label>
-        <input
-          type="text"
-          placeholder="Ej: Ibuprofeno"
+        <select
           [(ngModel)]="medicationForm()['medicationName']"
           required
-        />
+        >
+          <option value="">Selecciona una medicación</option>
+          <option
+            *ngFor="let medication of medicationCatalog()"
+            [value]="medication.name"
+          >
+            {{ medication.name }}
+          </option>
+        </select>
       </div>
       <div class="form-group">
         <label>Dosis *</label>

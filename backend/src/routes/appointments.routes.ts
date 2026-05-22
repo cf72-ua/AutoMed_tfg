@@ -12,6 +12,20 @@ const router: Router = express.Router();
 const appointmentsService = new AppointmentsService();
 
 /**
+ * GET /api/appointments/locations
+ * Obtener ubicaciones disponibles para consultas
+ */
+router.get("/locations", async (_req: Request, res: Response) => {
+  try {
+    const locations = await appointmentsService.listAppointmentLocations();
+    res.json(locations);
+  } catch (error) {
+    console.error("Error in GET /appointments/locations", error);
+    res.status(500).json({ error: "Failed to fetch appointment locations" });
+  }
+});
+
+/**
  * GET /api/appointments/patients/all
  * Obtener todos los pacientes del sistema
  */

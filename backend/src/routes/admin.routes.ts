@@ -8,6 +8,93 @@ const router: Router = express.Router();
 router.use(authenticateJWT);
 router.use(requireRole(["ADMIN"]));
 
+type CatalogType = "medications" | "report-types" | "locations";
+
+const catalogConfig: Record<
+  CatalogType,
+  {
+    table: string;
+    label: string;
+    select: string;
+    hasDetail?: boolean;
+    hasRequiredFields?: boolean;
+  }
+> = {
+  medications: {
+    table: "medication_catalog",
+    label: "Medicamento",
+    select:
+      "'medications' as categoryKey, 'Medicamento' as category, id, name, slug, description, NULL as detail, NULL as requiredFields, created_at as createdAt",
+  },
+  "report-types": {
+    table: "report_types",
+    label: "Tipo de informe",
+    select:
+      "'report-types' as categoryKey, 'Tipo de informe' as category, id, name, slug, description, template_name as detail, required_fields as requiredFields, created_at as createdAt",
+    hasDetail: true,
+    hasRequiredFields: true,
+  },
+  locations: {
+    table: "appointment_locations",
+    label: "Ubicación",
+    select:
+      "'locations' as categoryKey, 'Ubicación' as category, id, name, slug, description, NULL as detail, NULL as requiredFields, created_at as createdAt",
+  },
+};
+
+function getCatalogType(value: string): CatalogType | null {
+  return value === "medications" ||
+    value === "report-types" ||
+    value === "locations"
+    ? value
+    : null;
+}
+
+function slugify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function parseRequiredFields(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(String).map((field) => field.trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).map((field) => field.trim()).filter(Boolean);
+      }
+    } catch {
+      return trimmed
+        .split(",")
+        .map((field) => field.trim())
+        .filter(Boolean);
+    }
+  }
+
+  return [];
+}
+
+function mapCatalogRows(rows: any[]) {
+  return rows.map((row) => ({
+    ...row,
+    requiredFields:
+      typeof row.requiredFields === "string"
+        ? JSON.parse(row.requiredFields || "[]")
+        : row.requiredFields || [],
+  }));
+}
+
 router.get("/patients", async (_req: Request, res: Response) => {
   try {
     const db = getDatabase();
@@ -46,25 +133,189 @@ router.get("/catalog", async (_req: Request, res: Response) => {
   try {
     const db = getDatabase();
     const [rows]: any = await db.query(
-      `SELECT 'Tipo de informe' as category, id, name, slug, description, template_name as detail, created_at as createdAt
+      `SELECT ${catalogConfig["report-types"].select}
        FROM report_types
        UNION ALL
-       SELECT 'Categoría profesional' as category, id, name, NULL as slug, description, NULL as detail, NULL as createdAt
-       FROM professional_categories
+       SELECT ${catalogConfig.medications.select}
+       FROM medication_catalog
        UNION ALL
-       SELECT 'Especialidad' as category, s.id, s.name, NULL as slug, pc.name as description, NULL as detail, NULL as createdAt
-       FROM specialties s
-       LEFT JOIN professional_categories pc ON s.category_id = pc.id
-       UNION ALL
-       SELECT 'Tipo documental' as category, id, name, slug, description, NULL as detail, NULL as createdAt
-       FROM document_types
+       SELECT ${catalogConfig.locations.select}
+       FROM appointment_locations
        ORDER BY category, name`,
     );
 
-    res.json(rows);
+    res.json(mapCatalogRows(rows));
   } catch (error) {
     console.error("Error in GET /admin/catalog", error);
     res.status(500).json({ error: "Failed to fetch catalog" });
+  }
+});
+
+router.post("/catalog/:type", async (req: Request, res: Response) => {
+  try {
+    const type = getCatalogType(req.params.type);
+    if (!type) {
+      res.status(400).json({ error: "Invalid catalog type" });
+      return;
+    }
+
+    const db = getDatabase();
+    const config = catalogConfig[type];
+    const name = String(req.body.name || "").trim();
+    const slug = slugify(String(req.body.slug || name));
+    const description = req.body.description
+      ? String(req.body.description).trim()
+      : null;
+
+    if (!name || !slug) {
+      res.status(400).json({ error: "Name and slug are required" });
+      return;
+    }
+
+    let result: any;
+    if (type === "report-types") {
+      const templateName = String(req.body.detail || req.body.templateName || "").trim();
+      if (!templateName) {
+        res.status(400).json({ error: "Template name is required" });
+        return;
+      }
+
+      [result] = await db.query(
+        `INSERT INTO ${config.table} (name, slug, description, template_name, required_fields)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          name,
+          slug,
+          description,
+          templateName,
+          JSON.stringify(parseRequiredFields(req.body.requiredFields)),
+        ],
+      );
+    } else {
+      [result] = await db.query(
+        `INSERT INTO ${config.table} (name, slug, description)
+         VALUES (?, ?, ?)`,
+        [name, slug, description],
+      );
+    }
+
+    const [rows]: any = await db.query(
+      `SELECT ${config.select} FROM ${config.table} WHERE id = ?`,
+      [result.insertId],
+    );
+    res.status(201).json(mapCatalogRows(rows)[0]);
+  } catch (error: any) {
+    console.error("Error in POST /admin/catalog/:type", error);
+    res.status(error?.code === "ER_DUP_ENTRY" ? 409 : 500).json({
+      error:
+        error?.code === "ER_DUP_ENTRY"
+          ? "Catalog item already exists"
+          : "Failed to create catalog item",
+    });
+  }
+});
+
+router.put("/catalog/:type/:id", async (req: Request, res: Response) => {
+  try {
+    const type = getCatalogType(req.params.type);
+    const id = Number(req.params.id);
+    if (!type || !id) {
+      res.status(400).json({ error: "Invalid catalog type or id" });
+      return;
+    }
+
+    const db = getDatabase();
+    const config = catalogConfig[type];
+    const name = String(req.body.name || "").trim();
+    const slug = slugify(String(req.body.slug || name));
+    const description = req.body.description
+      ? String(req.body.description).trim()
+      : null;
+
+    if (!name || !slug) {
+      res.status(400).json({ error: "Name and slug are required" });
+      return;
+    }
+
+    if (type === "report-types") {
+      const templateName = String(req.body.detail || req.body.templateName || "").trim();
+      if (!templateName) {
+        res.status(400).json({ error: "Template name is required" });
+        return;
+      }
+
+      await db.query(
+        `UPDATE ${config.table}
+         SET name = ?, slug = ?, description = ?, template_name = ?, required_fields = ?
+         WHERE id = ?`,
+        [
+          name,
+          slug,
+          description,
+          templateName,
+          JSON.stringify(parseRequiredFields(req.body.requiredFields)),
+          id,
+        ],
+      );
+    } else {
+      await db.query(
+        `UPDATE ${config.table}
+         SET name = ?, slug = ?, description = ?
+         WHERE id = ?`,
+        [name, slug, description, id],
+      );
+    }
+
+    const [rows]: any = await db.query(
+      `SELECT ${config.select} FROM ${config.table} WHERE id = ?`,
+      [id],
+    );
+    if (!rows.length) {
+      res.status(404).json({ error: "Catalog item not found" });
+      return;
+    }
+
+    res.json(mapCatalogRows(rows)[0]);
+  } catch (error: any) {
+    console.error("Error in PUT /admin/catalog/:type/:id", error);
+    res.status(error?.code === "ER_DUP_ENTRY" ? 409 : 500).json({
+      error:
+        error?.code === "ER_DUP_ENTRY"
+          ? "Catalog item already exists"
+          : "Failed to update catalog item",
+    });
+  }
+});
+
+router.delete("/catalog/:type/:id", async (req: Request, res: Response) => {
+  try {
+    const type = getCatalogType(req.params.type);
+    const id = Number(req.params.id);
+    if (!type || !id) {
+      res.status(400).json({ error: "Invalid catalog type or id" });
+      return;
+    }
+
+    const db = getDatabase();
+    const [result]: any = await db.query(
+      `DELETE FROM ${catalogConfig[type].table} WHERE id = ?`,
+      [id],
+    );
+
+    if (!result.affectedRows) {
+      res.status(404).json({ error: "Catalog item not found" });
+      return;
+    }
+
+    res.json({ message: "Catalog item deleted" });
+  } catch (error: any) {
+    console.error("Error in DELETE /admin/catalog/:type/:id", error);
+    res.status(error?.code === "ER_ROW_IS_REFERENCED_2" ? 409 : 500).json({
+      error:
+        error?.code === "ER_ROW_IS_REFERENCED_2"
+          ? "Catalog item is in use"
+          : "Failed to delete catalog item",
+    });
   }
 });
 

@@ -1,7 +1,7 @@
     <div class="reports-container">
       <div class="reports-header">
         <h2>Mis Informes Médicos</h2>
-        <button class="btn btn-primary" routerLink="new">
+        <button class="btn btn-primary" routerLink="new" *ngIf="currentRole() !== 'PACIENTE'">
           + Nuevo Informe
         </button>
       </div>

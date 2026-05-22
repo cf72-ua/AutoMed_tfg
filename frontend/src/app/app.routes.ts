@@ -16,6 +16,20 @@ export const routes: Routes = [
       import("./features/auth/auth.routes").then((m) => m.AUTH_ROUTES),
   },
   {
+    path: "servicios",
+    loadComponent: () =>
+      import("./features/public/public-services.page").then(
+        (m) => m.PublicServicesPage,
+      ),
+  },
+  {
+    path: "contacto",
+    loadComponent: () =>
+      import("./features/public/public-contact.page").then(
+        (m) => m.PublicContactPage,
+      ),
+  },
+  {
     path: "dashboard",
     component: AppComponent,
   },

@@ -26,6 +26,12 @@ export interface MedicationAlarmResponse {
   createdAt: Date;
 }
 
+export interface MedicationCatalogResponse {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
 export class MedicationsService {
   private readonly medicationAlarmSelect = `
     SELECT
@@ -40,6 +46,26 @@ export class MedicationsService {
       created_at as createdAt
     FROM medication_alarms
   `;
+
+  /**
+   * Obtener catálogo de medicamentos administrables
+   */
+  async listMedicationCatalog(): Promise<MedicationCatalogResponse[]> {
+    const db = getDatabase();
+
+    try {
+      const [medications]: any = await db.query(
+        `SELECT id, name, description
+         FROM medication_catalog
+         ORDER BY name ASC`,
+      );
+
+      return medications;
+    } catch (error) {
+      console.error("Error getting medication catalog:", error);
+      throw error;
+    }
+  }
 
   /**
    * Obtener todas las alarmas de medicación de un paciente

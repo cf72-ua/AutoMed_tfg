@@ -12,11 +12,13 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
   AppointmentsService,
   Appointment,
+  AppointmentLocation,
   PatientInfo,
 } from "@core/services/appointments.service";
 import {
   MedicationsService,
   MedicationAlarm,
+  MedicationCatalogItem,
 } from "@core/services/medications.service";
 import { AuthService } from "@core/services/auth.service";
 
@@ -88,7 +90,9 @@ export class CalendarPage implements OnInit {
 
   
   appointmentsData = signal<Appointment[]>([]);
+  appointmentLocations = signal<AppointmentLocation[]>([]);
   medicationsData = signal<MedicationAlarm[]>([]);
+  medicationCatalog = signal<MedicationCatalogItem[]>([]);
 
   
   isLoading = signal<boolean>(false);
@@ -267,6 +271,9 @@ export class CalendarPage implements OnInit {
   }
 
   ngOnInit() {
+    this.loadAppointmentLocations();
+    this.loadMedicationCatalog();
+
     if (this.currentRole() === "DOCTOR") {
       
       if (this.currentUserId()) {
@@ -279,6 +286,34 @@ export class CalendarPage implements OnInit {
         this.loadPatientData();
       }
     }
+  }
+
+  private loadAppointmentLocations() {
+    this.appointmentsService
+      .getAppointmentLocations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (locations) => {
+          this.appointmentLocations.set(locations);
+        },
+        error: (err) => {
+          console.error("Error loading appointment locations:", err);
+        },
+      });
+  }
+
+  private loadMedicationCatalog() {
+    this.medicationsService
+      .getMedicationCatalog()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (medications) => {
+          this.medicationCatalog.set(medications);
+        },
+        error: (err) => {
+          console.error("Error loading medication catalog:", err);
+        },
+      });
   }
 
   private loadPatientData() {

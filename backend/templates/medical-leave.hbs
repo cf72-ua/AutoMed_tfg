@@ -14,7 +14,7 @@
         min-height: 297mm;
         padding: 18mm;
         background: #fff;
-        border-top: 10px solid #4e9d1d;
+        border-top: 10px solid #0f4b7a;
       }
       .topbar {
         display: grid;
@@ -46,8 +46,8 @@
         margin-bottom: 8px;
         padding: 5px 10px;
         border-radius: 999px;
-        background: #f2faed;
-        color: #2e7411;
+        background: #eaf6ff;
+        color: #0f4b7a;
         font-weight: 800;
       }
       .card {
@@ -74,49 +74,25 @@
         color: #667789;
         font-weight: 800;
       }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-        overflow: hidden;
+      .leave-box {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid #dbeaf8;
+        border-left: 5px solid #0f4b7a;
         border-radius: 8px;
-      }
-      thead {
         background: #eaf6ff;
-      }
-      th {
-        padding: 9px;
-        color: #0f4b7a;
-        text-align: left;
-        border-bottom: 1px solid #cfe4f6;
-      }
-      td {
-        padding: 9px;
-        border-bottom: 1px solid #edf2f7;
-        vertical-align: top;
-      }
-      tbody tr:nth-child(even) {
-        background: #fbfdff;
-      }
-      .duration {
-        margin-top: 12px;
-        padding: 12px;
-        border-left: 4px solid #4e9d1d;
-        background: #f2faed;
-        font-size: 13px;
-      }
-      .instructions {
         font-size: 13px;
         line-height: 1.8;
       }
-      .notice {
-        margin-top: 14px;
-        padding: 10px 12px;
-        border-left: 4px solid #f0b429;
-        background: #fff8e6;
-        color: #6b5100;
-        font-size: 12px;
-        font-weight: 700;
+      ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      .content {
+        font-size: 13px;
+        line-height: 1.8;
       }
       .signature {
         margin-top: 34px;
@@ -165,7 +141,7 @@
           <h1>{{reportType.name}}</h1>
         </div>
         <div class="meta">
-          <span class="pill">Plan terapéutico</span><br />
+          <span class="pill">Documento clínico</span><br />
           <strong>ID:</strong> #{{id}}<br />
           <strong>Emitido:</strong> {{generatedAt}}
         </div>
@@ -181,53 +157,39 @@
         </div>
       </section>
 
-      {{#if metadata.medications}}
-        <section class="card">
-          <h2 class="section-title">Medicamentos prescritos</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Medicamento</th>
-                <th>Dosis</th>
-                <th>Frecuencia</th>
-                <th>Duración</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each metadata.medications}}
-                <tr>
-                  <td>{{this.name}}</td>
-                  <td>{{this.dose}}</td>
-                  <td>{{this.frequency}}</td>
-                  <td>{{this.duration}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </section>
-      {{/if}}
-
-      {{#if metadata.duration}}
-        <section class="duration">
-          <strong>Duración del tratamiento:</strong> {{metadata.duration}}
-        </section>
-      {{/if}}
-
-      <section class="card">
-        <h2 class="section-title">Indicaciones del profesional</h2>
-        <div class="instructions">{{{body}}}</div>
+      <section class="leave-box">
+        <h2 class="section-title">Parte médico</h2>
+        <div>{{{body}}}</div>
       </section>
+
+      {{#if metadata.diagnosis}}
+        <section class="card">
+          <h2 class="section-title">Motivo / diagnóstico</h2>
+          <ul>
+            {{#each metadata.diagnosis}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </section>
+      {{/if}}
+
+      {{#if metadata.followUp}}
+        <section class="card">
+          <h2 class="section-title">Seguimiento</h2>
+          <ul>
+            {{#each metadata.followUp}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </section>
+      {{/if}}
 
       {{#if metadata.observations}}
         <section class="card">
           <h2 class="section-title">Observaciones</h2>
-          <div class="instructions">{{metadata.observations}}</div>
+          <div class="content">{{metadata.observations}}</div>
         </section>
       {{/if}}
-
-      <div class="notice">
-        Seguir únicamente las indicaciones del profesional sanitario responsable.
-      </div>
 
       {{#if signedAt}}
         <section class="signature">

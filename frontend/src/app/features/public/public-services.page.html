@@ -1,0 +1,36 @@
+<main class="public-page">
+  <section class="info-hero services-hero">
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h1>Atención médica conectada y sencilla</h1>
+      <p class="lead">
+        AutoMed reúne seguimiento clínico, citas, teleconsulta e informes en un
+        mismo espacio.
+      </p>
+    </div>
+    <img src="assets/doctor_bag.png" alt="" />
+  </section>
+
+  <section class="info-grid">
+    <article>
+      <h2>Citas y teleconsulta</h2>
+      <p>Agenda consultas presenciales o remotas y mantén el contacto con tu profesional.</p>
+    </article>
+    <article>
+      <h2>Informes médicos</h2>
+      <p>Generación, firma y descarga de informes clínicos de forma ordenada.</p>
+    </article>
+    <article>
+      <h2>Seguimiento diario</h2>
+      <p>Registro de hábitos, medicación y evolución para acompañar el cuidado.</p>
+    </article>
+  </section>
+
+  <section class="cta-band">
+    <h2>Empieza desde tu perfil</h2>
+    <div class="actions">
+      <a class="btn btn-green" routerLink="/auth/login" [queryParams]="{ as: 'paciente' }">Pacientes</a>
+      <a class="btn btn-blue" routerLink="/auth/login" [queryParams]="{ as: 'doctor' }">Doctores</a>
+    </div>
+  </section>
+</main>

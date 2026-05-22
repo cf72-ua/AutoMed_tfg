@@ -119,4 +119,11 @@ describe('ReportsListComponent', () => {
     expect(component.selectedStatus).toBe('');
     expect(component.searchText).toBe('');
   });
+
+  it('oculta el botón de nuevo informe para pacientes', () => {
+    const button: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('.reports-header .btn-primary');
+
+    expect(button).toBeNull();
+  });
 });

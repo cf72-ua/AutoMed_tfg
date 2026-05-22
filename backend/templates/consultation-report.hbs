@@ -1,207 +1,196 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{title}}</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
-        font-family: "Arial", sans-serif;
-        line-height: 1.6;
-        color: #333;
-        background-color: #f5f5f5;
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #1a2b3b;
+        background: #f5f8fb;
       }
-
-      .container {
-        max-width: 210mm;
-        height: 297mm;
-        margin: 0 auto;
-        padding: 20mm;
-        background-color: white;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      .page {
+        min-height: 297mm;
+        padding: 18mm;
+        background: #fff;
+        border-top: 10px solid #0f4b7a;
       }
-
-      header {
-        text-align: center;
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 20px;
-        margin-bottom: 30px;
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: start;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #dbeaf8;
       }
-
-      header h1 {
-        color: #007bff;
+      .brand {
+        color: #0f4b7a;
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+      h1 {
+        margin: 8px 0 0;
+        color: #0f4b7a;
         font-size: 28px;
-        margin-bottom: 10px;
+        line-height: 1.15;
       }
-
-      .header-info {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: #666;
-        margin-top: 10px;
+      .meta {
+        text-align: right;
+        color: #5b6673;
+        font-size: 11px;
+        line-height: 1.7;
       }
-
-      .patient-section {
-        margin-bottom: 25px;
+      .pill {
+        display: inline-block;
+        margin-bottom: 8px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #eaf6ff;
+        color: #0f4b7a;
+        font-weight: 800;
       }
-
+      .card {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid #dbeaf8;
+        border-radius: 8px;
+        background: #fbfdff;
+      }
       .section-title {
-        font-size: 14px;
-        font-weight: bold;
-        color: #007bff;
-        border-left: 4px solid #007bff;
-        padding-left: 10px;
-        margin-bottom: 10px;
-        margin-top: 15px;
+        margin: 0 0 10px;
+        color: #0f4b7a;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
       }
-
-      .patient-info {
+      .info-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        gap: 10px 18px;
         font-size: 13px;
-        margin-bottom: 15px;
       }
-
-      .info-row {
-        display: flex;
+      .label {
+        color: #667789;
+        font-weight: 800;
       }
-
-      .info-label {
-        font-weight: bold;
-        color: #555;
-        min-width: 120px;
-      }
-
-      .info-value {
-        color: #333;
-      }
-
       .content {
-        margin: 20px 0;
+        margin-top: 18px;
         font-size: 13px;
         line-height: 1.8;
         text-align: justify;
       }
-
-      .signature-section {
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #ddd;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
+      .summary {
+        margin-top: 12px;
+        padding: 12px;
+        border-left: 4px solid #4e9d1d;
+        background: #f2faed;
+        font-size: 13px;
       }
-
-      .signature-block {
+      .signature {
+        margin-top: 34px;
+        padding-top: 18px;
+        border-top: 1px solid #dbeaf8;
+        display: grid;
+        grid-template-columns: 1fr 180px;
+        align-items: end;
+        gap: 24px;
+      }
+      .signature-box {
         text-align: center;
-        width: 150px;
       }
-
       .signature-image {
-        height: 60px;
-        margin-bottom: 5px;
-        border-bottom: 1px solid #333;
+        height: 58px;
+        max-width: 170px;
+        object-fit: contain;
+        border-bottom: 1px solid #1a2b3b;
       }
-
+      .signature-line {
+        height: 58px;
+        border-bottom: 1px solid #1a2b3b;
+      }
       .signature-name {
+        margin-top: 6px;
         font-size: 12px;
-        font-weight: bold;
-        margin-top: 5px;
+        font-weight: 900;
       }
-
       .signature-date {
-        font-size: 11px;
-        color: #666;
-        margin-top: 3px;
-      }
-
-      .footer {
+        color: #667789;
         font-size: 10px;
-        color: #999;
-        margin-top: 30px;
-        text-align: center;
+      }
+      footer {
+        margin-top: 28px;
         padding-top: 10px;
-        border-top: 1px solid #ddd;
-      }
-
-      .stamp {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-45deg);
-        font-size: 48px;
-        color: rgba(0, 123, 255, 0.1);
-        font-weight: bold;
+        border-top: 1px solid #dbeaf8;
+        color: #7a8794;
+        font-size: 10px;
         text-align: center;
-        pointer-events: none;
-        z-index: -1;
-      }
-
-      @media print {
-        body {
-          background-color: white;
-        }
-        .container {
-          box-shadow: none;
-        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>{{reportType.name}}</h1>
-        <div class="header-info">
-          <span><strong>Fecha de generación:</strong> {{generatedAt}}</span>
-          <span><strong>ID Reporte:</strong> #{{id}}</span>
+    <main class="page">
+      <header class="topbar">
+        <div>
+          <div class="brand">AutoMed</div>
+          <h1>{{reportType.name}}</h1>
+        </div>
+        <div class="meta">
+          <span class="pill">Informe médico</span><br />
+          <strong>ID:</strong> #{{id}}<br />
+          <strong>Generado:</strong> {{generatedAt}}
         </div>
       </header>
 
-      <section class="patient-section">
-        <div class="section-title">DATOS DEL PACIENTE</div>
-        <div class="patient-info">
-          <div class="info-row">
-            <span class="info-label">Nombre:</span>
-            <span class="info-value">{{patient.name}}</span>
-          </div>
+      <section class="card">
+        <h2 class="section-title">Datos principales</h2>
+        <div class="info-grid">
+          <div><span class="label">Paciente:</span> {{patient.name}}</div>
+          <div><span class="label">Profesional:</span> {{professional.name}}</div>
+          <div><span class="label">Categoría:</span> {{professional.category}}</div>
+          <div><span class="label">Estado:</span> {{status}}</div>
         </div>
       </section>
 
-      <section>
-        <div class="section-title">INFORME MÉDICO</div>
+      {{#if metadata.clinicalSummary}}
+        <section class="summary">
+          <strong>Resumen clínico:</strong> {{metadata.clinicalSummary}}
+        </section>
+      {{/if}}
+
+      <section class="card">
+        <h2 class="section-title">Contenido del informe</h2>
         <div class="content">{{{body}}}</div>
       </section>
 
+      {{#if metadata.observations}}
+        <section class="card">
+          <h2 class="section-title">Observaciones</h2>
+          <div class="content">{{metadata.observations}}</div>
+        </section>
+      {{/if}}
+
       {{#if signedAt}}
-        <section class="signature-section">
-          <div class="signature-block">
+        <section class="signature">
+          <div>
+            <div class="label">Documento firmado digitalmente</div>
+            <div class="signature-date">Fecha de firma: {{signedAt}}</div>
+          </div>
+          <div class="signature-box">
             {{#if professional.signature}}
-              <img
-                src="{{professional.signature}}"
-                alt="Firma"
-                class="signature-image"
-              />
+              <img src="{{professional.signature}}" alt="Firma" class="signature-image" />
             {{else}}
-              <div class="signature-image"></div>
+              <div class="signature-line"></div>
             {{/if}}
             <div class="signature-name">{{professional.signatureName}}</div>
-            <div class="signature-date">Firmado: {{signedAt}}</div>
           </div>
         </section>
       {{/if}}
 
-      <footer class="footer">
-        <p>Este documento ha sido generado automáticamente y tiene validez
-          legal.</p>
-        <p>Profesional: {{professional.name}} ({{professional.category}})</p>
+      <footer>
+        Documento generado por AutoMed. Profesional: {{professional.name}}.
       </footer>
-    </div>
+    </main>
   </body>
 </html>

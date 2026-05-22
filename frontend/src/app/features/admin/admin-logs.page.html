@@ -94,11 +94,13 @@
     </button>
     <button
       type="button"
-      *ngFor="let page of [].constructor(totalPages); let i = index"
-      [class.active]="currentPage === i + 1"
-      (click)="goToPage(i + 1)"
+      *ngFor="let page of visiblePages"
+      [class.active]="page === currentPage"
+      [class.pagination-ellipsis]="page === '...'"
+      [disabled]="page === '...'"
+      (click)="page !== '...' && goToPage(page)"
     >
-      {{ i + 1 }}
+      {{ page }}
     </button>
     <button
       type="button"

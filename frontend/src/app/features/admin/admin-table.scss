@@ -55,8 +55,34 @@
   align-items: end;
 }
 
+.catalog-form {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(16, 65, 105, 0.15);
+  box-shadow: var(--shadow);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.description-field {
+  grid-column: span 2;
+}
+
 .filter-field label {
-  display: none;
+  display: block;
+  margin: 0 0 5px;
+  color: var(--blue-900);
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .search-field {
@@ -89,6 +115,35 @@
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.clear-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.secondary-btn,
+.table-btn {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 65, 105, 0.2);
+  background: #fff;
+  color: var(--blue-900);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.table-btn {
+  height: 32px;
+  margin-left: 6px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.table-btn.danger {
+  color: #a32020;
+  border-color: rgba(163, 32, 32, 0.3);
 }
 
 .admin-table {
@@ -185,25 +240,56 @@
   box-shadow: var(--shadow);
 }
 
+.alert-error {
+  background: #fff1f1;
+  color: #8a1f1f;
+}
+
 .pagination {
   display: flex;
+  align-items: center;
   gap: 8px;
   justify-content: flex-end;
   margin-top: 14px;
 }
 
 .pagination button {
+  min-width: 38px;
   height: 36px;
+  padding: 0 12px;
   border-radius: 8px;
   border: 1px solid rgba(16, 65, 105, 0.18);
   background: #fff;
-  font-weight: 800;
+  color: var(--blue-900);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled):not(.active) {
+  background: var(--blue-100);
 }
 
 .pagination button.active {
   background: var(--blue-900);
+  border-color: var(--blue-900);
   color: #fff;
+  box-shadow: 0 6px 12px rgba(15, 75, 122, 0.22);
+}
+
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pagination button.pagination-ellipsis {
+  min-width: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: #667789;
+  opacity: 1;
 }
 
 @media (max-width: 720px) {
@@ -221,5 +307,21 @@
 
   .search-field {
     grid-column: 1;
+  }
+
+  .description-field {
+    grid-column: 1;
+  }
+
+  .pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .pagination button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 }

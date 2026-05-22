@@ -34,7 +34,6 @@ export class SidebarComponent {
   });
 
   patientItems: SideItem[] = [
-    { label: "Perfil", path: "/profile/patient" },
     { label: "Calendario", path: "/calendar" },
     { label: "Evolución", path: "/evolution" },
     { label: "Registro de Hábitos", path: "/habits" },
@@ -43,7 +42,6 @@ export class SidebarComponent {
   ];
 
   professionalItems: SideItem[] = [
-    { label: "Perfil", path: "/profile/professional" },
     { label: "Calendario", path: "/calendar" },
     { label: "Pacientes", path: "/professional/patients" },
     { label: "Reportes", path: "/reports" },

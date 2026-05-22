@@ -113,6 +113,8 @@ mysql -u root -p telemedicina_tfg < bd/data/202605151100_add_reports_module_v2.s
 mysql -u root -p telemedicina_tfg < bd/data/202605151130_make_report_consultation_optional.sql
 mysql -u root -p telemedicina_tfg < bd/data/202605161200_add_teleconsultation_module.sql
 mysql -u root -p telemedicina_tfg < bd/data/202605221545_add_medication_alarm_end_date.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605221930_add_admin_catalog_crud.sql
+mysql -u root -p telemedicina_tfg < bd/data/202605221945_remove_meet_urls_from_locations.sql
 ```
 
 Para comprobar una columna o tabla:

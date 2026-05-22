@@ -20,6 +20,12 @@ export interface PatientInfo {
   name: string;
 }
 
+export interface AppointmentLocation {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -27,6 +33,15 @@ export class AppointmentsService {
   private endpoint = "/appointments";
 
   constructor(private apiService: ApiService) {}
+
+  /**
+   * Get appointment locations managed by admins
+   */
+  getAppointmentLocations(): Observable<AppointmentLocation[]> {
+    return this.apiService.get<AppointmentLocation[]>(
+      `${this.endpoint}/locations`,
+    );
+  }
 
   /**
    * Get all appointments for a patient
